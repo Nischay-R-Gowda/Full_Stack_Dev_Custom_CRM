@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Nexus CRM — Complete Learning Guide</title>
+<title>NRG CO-WORKING CRM — Complete Learning Guide</title>
 <style>
   :root {
     --ink: #1e293b;
@@ -100,7 +100,7 @@
     size: A4;
     margin: 20mm 16mm 18mm;
     @bottom-center { content: counter(page); font-size: 8.5pt; color: #94a3b8; }
-    @top-right { content: "Nexus CRM — Complete Learning Guide"; font-size: 8pt; color: #cbd5e1; }
+    @top-right { content: "NRG CO-WORKING CRM — Complete Learning Guide"; font-size: 8pt; color: #cbd5e1; }
   }
   @page :first { @top-right { content: none; } @bottom-center { content: none; } }
 </style>
@@ -109,13 +109,13 @@
 
 <div class="cover">
   <div class="eyebrow">Full Stack Development</div>
-  <h1>Nexus CRM</h1>
+  <h1>NRG CO-WORKING CRM</h1>
   <div class="sub">Complete Learning Guide and Implementation Reference</div>
   <div class="rule"></div>
   <div class="meta">
-    <div><strong>Scope:</strong> Semester MVP — a functional CRM from lead capture to closed revenue</div>
+    <div><strong>Scope:</strong> Semester MVP - a coworking sales CRM from public landing page to closed revenue</div>
     <div><strong>Stack:</strong> React 19 · Vite · Tailwind CSS v4 · Express · SQLite · Prisma</div>
-    <div><strong>Generated:</strong> 2026-10-14</div>
+    <div><strong>Generated:</strong> 2026-10-26</div>
     <div><strong>Sources:</strong> README.md and the 14 documents in <code>docs/</code></div>
   </div>
 </div>
@@ -180,11 +180,30 @@ npm run dev</code></pre>
 <p>See <code>docs/</code> for:</p>
 <ul><li>Architecture, database schema, and API reference</li><li>Frontend and JavaScript learning guides</li><li>Testing report and known limitations</li><li>Viva question bank (100+ questions)</li><li>Complete learning guide with code explanations</li></ul>
 <h2>License</h2>
-<p>University semester project — Nexus CRM.</p></section>
+<p>University semester project — NRG CO-WORKING CRM.</p></section>
 
 <section class="part"><h2 class="part-title">Part I — Foundations</h2></section>
-<section class="chapter"><h1 class="chapter-title">Project Master Overview</h1><h2>1. Project Overview</h2>
-<p><strong>Name:</strong> Nexus CRM <strong>Type:</strong> Full-stack CRM web application <strong>Purpose:</strong> Semester 1 project + personal mega project <strong>Timeline:</strong> ~14 days, 3-4 hours/day</p>
+<section class="chapter"><h1 class="chapter-title">Project Master Overview</h1><h2>0. NRG Addendum (newest)</h2>
+<p>This CRM has been rebranded and extended from the original Nexus CRM into <strong>NRG CO-WORKING CRM</strong> — a HubSpot-style sales tool for a Bengaluru coworking chain. New in this version, compared to the original documents below:</p>
+<ul><li><strong>Public landing page</strong> at <code>/</code> (workspaces: hot desks, dedicated desks,</li></ul>
+<p>  private offices, meeting rooms; Bengaluru localities) with "Enter CRM"   (<code>/app</code>) and "Explore Workspaces" (same-page anchor) CTAs; all CRM pages now   live under <code>/app/*</code>.</p>
+<ul><li><strong>Coworking lead fields</strong>: <code>seatsRequired</code>, <code>locality</code> (Whitefield …</li></ul>
+<p>  Marathahalli, Other) and <code>duration</code> (1 day … 12 months, Custom) — nullable   Prisma columns, whitelisted server-side, null-safe for older records.</p>
+<ul><li><strong>Contact form "Also create a lead"</strong>: MQL (default) or SQL; SQL</li></ul>
+<p>  auto-creates exactly one deal (idempotent via <code>Deal.leadId @unique</code> +   findFirst guard).</p>
+<ul><li><strong>Qualification readiness</strong>: <code>GET /api/leads/:id/readiness</code> returns missing</li></ul>
+<p>  coworking fields; the UI hides Qualify once a lead is qualified/converted/   disqualified.</p>
+<ul><li><strong>Activities</strong> gained a <code>tour</code> (workspace tour) type, due <em>datetime</em>,</li></ul>
+<p>  priority, association pickers, overdue/upcoming/completed views, and   "Email logged" (never "sent") labelling.</p>
+<ul><li><strong>Settings</strong>: light/dark theme, display name, currency (INR/USD) and date</li></ul>
+<p>  format — localStorage-preserved, presentation-only (stored data untouched);   <strong>Reset All Data</strong> (case-sensitive password <code>Nischay</code>, server-validated,   FK-safe transaction; documented as a demo convenience, not security).</p>
+<ul><li><strong>Reports/Dashboard</strong>: <code>[object Object]</code> KPI bug fixed (groupBy results are</li></ul>
+<p>  mapped to plain numbers + resolved stage names); new "Seat Demand by   Locality" panel; closed deals excluded from open pipeline value; lost value   is never counted as revenue.</p>
+<ul><li><strong>Dates</strong> are stored as ISO and rendered locally as</li></ul>
+<p>  "19 Oct 2026, 10:35 PM" everywhere a record timestamp appears.</p>
+<p>Everything below still applies; read the addendum first, then the original sections.</p>
+<h2>1. Project Overview</h2>
+<p><strong>Name:</strong> NRG CO-WORKING CRM (originally "Nexus CRM", rebranded in this version) <strong>Type:</strong> Full-stack CRM web application <strong>Purpose:</strong> Semester 1 project + personal mega project <strong>Timeline:</strong> ~14 days, 3-4 hours/day</p>
 <h2>2. Product Workflow</h2>
 <pre class="code"><code>Lead Sources → New Lead / MQL → Contact Association → Qualification → SQL
     → Deal Creation → Sales Pipeline → Closed Won / Closed Lost
@@ -1106,7 +1125,7 @@ npm run preview</code></pre>
 <section class="part"><h2 class="part-title">Part V — Presentation</h2></section>
 <section class="chapter"><h1 class="chapter-title">Final Presentation Outline</h1><h2>Presentation Structure (~15-20 minutes)</h2>
 <h3>Slide 1: Title</h3>
-<ul><li>Project: Nexus CRM</li><li>Student name and ID</li><li>Course: Full Stack Development 1</li><li>University and semester</li></ul>
+<ul><li>Project: NRG CO-WORKING CRM</li><li>Student name and ID</li><li>Course: Full Stack Development 1</li><li>University and semester</li></ul>
 <h3>Slide 2: Problem Statement</h3>
 <ul><li>Why CRMs are important for businesses</li><li>Gap: Small businesses can't afford enterprise CRMs</li><li>Solution: A simple, effective, open-source CRM</li></ul>
 <h3>Slide 3: Product Workflow</h3>
@@ -1157,7 +1176,7 @@ npm run preview</code></pre>
 <ul><li>Why Tailwind CSS over CSS modules (consistency, speed, design system)</li><li>Why SQLite (zero-config, perfect for semester project)</li><li>Why no auth (documented limitation, kept scope manageable)</li><li>Why simulated integrations (real APIs require accounts, keys, rate limits)</li></ul></section>
 <section class="chapter"><h1 class="chapter-title">Viva Question Bank</h1><h2>100+ Questions with Answers</h2>
 <h3>General / Introduction</h3>
-<p><strong>Q1. What is Nexus CRM?</strong> A: Nexus CRM is a full-stack Customer Relationship Management web application. It helps businesses manage contacts, leads, deals, and sales pipelines. It's built with React (frontend), Express.js (backend), and SQLite with Prisma ORM (database).</p>
+<p><strong>Q1. What is NRG CO-WORKING CRM?</strong> A: NRG CO-WORKING CRM is a full-stack Customer Relationship Management web application. It helps businesses manage contacts, leads, deals, and sales pipelines. It's built with React (frontend), Express.js (backend), and SQLite with Prisma ORM (database).</p>
 <p><strong>Q2. What problem does this CRM solve?</strong> A: It helps small and medium businesses track leads, manage contacts, and visualize their sales pipeline. Instead of using spreadsheets or multiple disconnected tools, everything is in one place.</p>
 <p><strong>Q3. What technologies did you use and why?</strong> A:</p>
 <ul><li>React — For building a dynamic, component-based UI with efficient re-rendering</li><li>Vite — Fast build tool with hot module replacement during development</li><li>Tailwind CSS — Utility-first CSS framework for rapid, consistent styling</li><li>Recharts — React charting library for dashboard visualizations</li><li>Lucide React — Clean, consistent icon library</li><li>Express.js — Minimal, flexible Node.js backend framework</li><li>Prisma ORM — Type-safe database access with auto-generated queries</li><li>SQLite — Zero-configuration file-based database, perfect for development</li></ul>
@@ -1231,7 +1250,7 @@ const data = await response.json()</code></pre>
 <p><strong>Q50. What is CORS and why is it needed?</strong> A: CORS (Cross-Origin Resource Sharing) allows the frontend (port 5173) to make requests to the backend (port 5000). Browsers block cross-origin requests by default. The <code>cors()</code> middleware adds appropriate headers.</p>
 <h3>Database</h3>
 <p><strong>Q51. What is SQLite?</strong> A: SQLite is a file-based relational database. It doesn't require a server — the database is a single file. Perfect for development and small applications.</p>
-<p><strong>Q52. What is an ERD (Entity Relationship Diagram)?</strong> A: A diagram showing database tables and their relationships. In Nexus CRM: User→Lead, Contact→Lead/Deal/Activity, Pipeline→Stage→Deal, etc.</p>
+<p><strong>Q52. What is an ERD (Entity Relationship Diagram)?</strong> A: A diagram showing database tables and their relationships. In NRG CO-WORKING CRM: User→Lead, Contact→Lead/Deal/Activity, Pipeline→Stage→Deal, etc.</p>
 <p><strong>Q53. What are foreign keys?</strong> A: A foreign key is a column that references a primary key in another table. Example: <code>deal.contactId</code> references <code>contact.id</code>. This creates relationships between tables.</p>
 <p><strong>Q54. What is a unique constraint?</strong> A: A database constraint ensuring a field's value is unique across all rows. Example: <code>email</code> on Contact has <code>@unique</code>, preventing duplicate emails.</p>
 <p><strong>Q55. What is ON DELETE CASCADE?</strong> A: A foreign key behavior where deleting a parent record also deletes child records. Example: Deleting a Pipeline cascades to delete its Stages.</p>
@@ -1242,7 +1261,7 @@ const data = await response.json()</code></pre>
 <p><strong>Q59. What is SQL?</strong> A: SQL stands for Sales Qualified Lead. A lead that the sales team has verified as having genuine interest, budget, and authority to purchase.</p>
 <p><strong>Q60. What is a sales pipeline?</strong> A: A visual representation of where deals are in the sales process. Stages typically progress from "New Opportunity" through "Negotiation" to "Closed Won/Lost".</p>
 <p><strong>Q61. What is lead scoring?</strong> A: A methodology to rank leads based on their likelihood to convert. Not fully implemented in this MVP, but the qualification system is the foundation.</p>
-<p><strong>Q62. What is conversion rate?</strong> A: The percentage of leads that become customers. In Nexus CRM: <code>(converted leads / total leads) * 100</code>.</p>
+<p><strong>Q62. What is conversion rate?</strong> A: The percentage of leads that become customers. In NRG CO-WORKING CRM: <code>(converted leads / total leads) * 100</code>.</p>
 <p><strong>Q63. What is pipeline value?</strong> A: The total monetary value of all open (not yet won or lost) deals in the pipeline. Used for sales forecasting.</p>
 <p><strong>Q64. What is the difference between a contact and a lead?</strong> A: A contact is a person/company record (email, phone, etc.). A lead is a potential customer that goes through a qualification process. One contact can have multiple leads over time.</p>
 <h3>Code Quality</h3>
@@ -1287,8 +1306,36 @@ const data = await response.json()</code></pre>
 <p><strong>Q98. What is the difference between SQL and NoSQL?</strong> A: SQL databases (like SQLite) use structured tables with predefined schemas and relationships. NoSQL databases (like MongoDB) use flexible, document-based storage. We chose SQL for its relational nature (contacts → leads → deals).</p>
 <p><strong>Q99. What is an API client?</strong> A: A centralized module (<code>src/services/api.js</code>) that wraps all API calls. It handles base URL, JSON serialization, and error formatting. Components import from this file rather than making raw fetch calls.</p>
 <p><strong>Q100. What would you improve if you had more time?</strong> A: Authentication, drag-and-drop pipeline, email integration, pagination, testing suite, better error boundaries, mobile optimization, dark mode, real-time updates with WebSockets.</p>
-<p><strong>Q101. Is Nexus CRM production-ready?</strong> A: No. It lacks authentication, proper error boundaries, comprehensive testing, pagination, and production-grade infrastructure. It's a solid semester MVP that demonstrates full-stack development skills.</p>
-<p><strong>Q102. What did you learn from this project?</strong> A: Full React component architecture, state management with hooks, REST API design, database modeling with Prisma, responsive CSS with Tailwind, data visualization with Recharts, and end-to-end debugging.</p></section>
+<p><strong>Q101. Is NRG CO-WORKING CRM production-ready?</strong> A: No. It lacks authentication, proper error boundaries, comprehensive testing, pagination, and production-grade infrastructure. It's a solid semester MVP that demonstrates full-stack development skills.</p>
+<p><strong>Q102. What did you learn from this project?</strong> A: Full React component architecture, state management with hooks, REST API design, database modeling with Prisma, responsive CSS with Tailwind, data visualization with Recharts, and end-to-end debugging.</p>
+<hr>
+<h2>NRG CO-WORKING Specific Questions (Q103-Q124)</h2>
+<p><strong>Q103. What is NRG CO-WORKING CRM and who is it for?</strong> A: It is a HubSpot-style sales CRM purpose-built for NRG, a Bengaluru coworking chain. Sales reps track prospective members from the first enquiry (lead) through MQL/SQL qualification to a booked deal (desks or offices). The app is organised around a public landing page, an "Enter CRM" workspace, contacts, leads, deals, pipelines, activities, reports and settings.</p>
+<p><strong>Q104. Why build a CRM for a coworking business instead of using a generic one?</strong> A: Coworking sales has domain-specific data - how many seats a prospect wants, which Bengaluru locality they prefer and for how long. A generic CRM forces these into free-text notes; NRG CRM makes them structured, filterable fields (seatsRequired, locality, duration), which powers seat-demand analytics by locality on the dashboard.</p>
+<p><strong>Q105. What are the three new coworking lead fields and how are they stored?</strong> A: <code>seatsRequired</code> (Int?), <code>locality</code> (String?) and <code>duration</code> (String?) were added to the <code>Lead</code> Prisma model as nullable columns and pushed to SQLite with <code>prisma db push</code> (additive, no data loss). Nullable so the existing 20+ leads stay valid. Locality is whitelisted against a <code>LOCALITIES</code> array (Whitefield, Outer Ring Road, Koramangala, Indiranagar, HSR Layout, Electronic City, Hebbal, MG Road, Jayanagar, Marathahalli, Other) and duration against <code>DURATIONS</code> (1 day ... 12 months, Custom) - the server validates both so invalid values never reach the DB.</p>
+<p><strong>Q106. Walk through the "also create a lead" checkbox on the contact form.</strong> A: When checked on <em>create</em> only (not on edit), the contact form exposes lead type (MQL default / SQL), source, seats, locality and duration. On submit the frontend attaches a <code>createLead</code> payload. The backend <code>createContact</code> inserts the contact, then - only if <code>createLead.enabled</code> - creates exactly one <code>Lead</code> linked by <code>contactId</code>, with status <code>new</code> for MQL or <code>qualified</code> for SQL. For SQL it also resolves the pipeline first open stage and creates exactly one deal via a dedup guard.</p>
+<p><strong>Q107. What happens if the lead type is SQL in that sub-form?</strong> A: The lead is created with <code>type: 'sql'</code>, <code>status: 'qualified'</code>, and a deal is automatically created in the pipeline first non-closed stage so the pipeline immediately shows the open opportunity. A toast confirms "deal added to pipeline".</p>
+<p><strong>Q108. How does the SQL-to-deal rule stay safe when called repeatedly?</strong> A: <code>Deal.leadId</code> is a <code>@unique</code> column. <code>qualifyLead</code> first runs <code>prisma.deal.findFirst({ where: { leadId } })</code> and returns that existing deal if found; only when none exists does it create one. So re-qualifying the same lead any number of times creates exactly one deal - the constraint is enforced both in code and by the database.</p>
+<p><strong>Q109. What is the readiness gate before qualifying a lead?</strong> A: <code>GET /api/leads/:id/readiness</code> returns <code>{ ready, missing[] }</code> where missing lists any of seatsRequired/locality/duration that are still null, and ready is true when the status is qualified/converted or all three fields are present. The UI shows "Qualify (N fields missing)" when incomplete and hides the Qualify button entirely once a lead is qualified, converted or disqualified - so a lead can never be re-qualified blindly.</p>
+<p><strong>Q110. What is the lead lifecycle in this app?</strong> A: New - Attempting - Connected - Qualified (MQL/SQL) - Converted (Deal) - Closed Won / Closed Lost, with a Disqualified terminal state. Each transition is a deliberate action (status update or qualification), not a side-effect, and the lead id and contactId are preserved throughout so history never forks into a duplicate record.</p>
+<p><strong>Q111. What is the "tour" activity type and why does it exist?</strong> A: A workspace tour - a sales rep showing a prospect the NRG facility. It was added to the backend <code>ACTIVITY_TYPES</code> list (call, email, meeting, tour, note, task) and the frontend <code>ACTIVITY_TYPES</code> map with its own MapPin icon and "Workspace tour" label.</p>
+<p><strong>Q112. Why do email activities say "Email logged" instead of "Email sent"?</strong> A: The app has no mail integration - logging an email is a CRM record, not an outbound send. The label deliberately says "Email logged" so a reviewer cannot mistake the feature for real email delivery. The same rule applies to every simulated action in the demo.</p>
+<p><strong>Q113. What does the Activities page support end to end?</strong> A: Create, edit, complete/reopen (toggle), and delete; association pickers for contact/lead/deal; a due datetime (<code>&lt;input type="datetime-local"&gt;</code>, stored as ISO); priority low/medium/high; type filter; free-text search; and Overdue / Upcoming / Completed tabs. Overdue is computed against the current time and refreshed by a 60-second interval.</p>
+<p><strong>Q114. How do display preferences (currency, date format, theme, display name) work without corrupting data?</strong> A: They are stored under <code>nrg.*</code> keys in <strong>localStorage</strong> - presentation only. <code>formatCurrency</code>/<code>formatDateTime</code> read the setting at render time; the database always stores plain numbers and ISO timestamps. Switching INR to USD changes the symbol, not the amount; switching date format re-renders existing rows without rewriting them.</p>
+<p><strong>Q115. How does dark mode work in Tailwind CSS 4?</strong> A: <code>index.css</code> declares <code>@custom-variant dark (&amp;:where(.dark, .dark *));</code> - the class strategy. A <code>dark</code> class on <code>&lt;html&gt;</code> activates it. <code>initTheme()</code> in <code>main.jsx</code> reads <code>nrg.theme</code> from localStorage <em>before</em> React renders (so there is no flash of the wrong theme), and the Settings page toggles the class and persists the value.</p>
+<p><strong>Q116. Explain the Reset All Data feature and its security caveat.</strong> A: <code>POST /api/settings/reset</code> takes a password; the backend validates the exact case-sensitive string <code>Nischay</code> <em>server-side</em>. On a match it runs one <code>prisma.$transaction</code> deleting in FK-safe order (activities, notifications, deals, leads, contacts) while preserving users, pipelines, stages and schema. Wrong password gives HTTP 400 and zero rows touched. This is a demo convenience, <strong>not</strong> security: the endpoint is unauthenticated, so it must never be exposed publicly.</p>
+<p><strong>Q117. Why did the dashboard KPIs show [object Object] before the fix, and how was it fixed?</strong> A: Prisma <code>groupBy</code> with <code>_count: { _all: true }</code> returns <code>{ _count: { _all: n } }</code>, and the old code rendered <code>row._count</code> directly (an object, not the number). The backend metrics layer now maps every groupBy result to plain <code>{ name, value }</code>, <code>{ source, count }</code> or <code>{ stageName, count, value }</code> shapes and a lookup table resolves stage names (no more "Stage 14"). KPI cards and charts consume the plain numbers, and every chart has an empty-state fallback.</p>
+<p><strong>Q118. What does "seat demand by locality" show and how is it computed?</strong> A: A new dashboard panel: <code>groupBy</code> locality over leads, summing <code>seatsRequired</code>, so NRG can see which localities want the most desks. Returned as <code>{ name, seats, leads }</code> and rendered as a bar chart.</p>
+<p><strong>Q119. How is pipeline value computed and what is excluded?</strong> A: Open pipeline value is the sum of <code>amount</code> over deals whose status is <code>open</code>, i.e. not in a Closed Won / Closed Lost stage. Won revenue counts only closed-won deals; <strong>lost value is never treated as revenue</strong> anywhere on the dashboard or in reports.</p>
+<p><strong>Q120. Why are all CRM pages nested under /app with the landing page at / ?</strong> A: The public landing page (hero, workspace types, "Enter CRM" CTA) is unauthenticated marketing surface; the app itself lives under <code>/app/*</code> with Sidebar and Header in a shared <code>AppShell</code>. "Enter CRM" navigates to <code>/app</code>; "Exit to Landing" navigates back to <code>/</code>.</p>
+<p><strong>Q121. What does "Explore Workspaces" on the landing page do?</strong> A: It smooth-scrolls to the <code>#workspaces</code> section on the same page - a real, working anchor, not a dead link. The four cards are Hot Desks, Dedicated Desks, Private Offices and Meeting Rooms.</p>
+<p><strong>Q122. How are dates stored versus displayed throughout the app?</strong> A: Stored as ISO-8601 timestamps (Prisma <code>DateTime</code>); rendered in the browser local timezone. <code>formatDateTime</code> produces "19 Oct 2026, 10:35 PM" and honours the user's <code>nrg.dateFormat</code> choice (DD/MM/YYYY or DD Mon YYYY). Every list row, detail modal and "Recent Activity" block shows date + time, not date-only.</p>
+<p><strong>Q123. What changed in the Kanban board for deals?</strong> A: The pipeline filter is coerced with <code>Number()</code> so <code>pipelineFilter=3</code> matches stage <code>pipelineId: 3</code>; stage columns now derive their deal lists from the <em>actual</em> <code>stageId</code> (no hard-coded counts); columns with zero deals show an empty state; and the backend <code>moveDealStage</code> sets <code>status</code> (open/won/lost) plus <code>actualCloseDate</code> when a deal lands in a closed stage, so a refresh shows the deal in the correct column with the right close date.</p>
+<p><strong>Q124. How was the app tested before you declared it done?</strong> A: Three layers: (1) a Node E2E harness hitting the live API on port 5000 - 19 checks covering contact+lead+deal creation, idempotent qualification, the readiness endpoint, reset with wrong/correct password, and the tour activity type; (2) a data-integrity harness proving stage moves persist and the stage-deletion guard blocks deletion while deals exist; (3) <code>npm run build</code> and <code>npm run lint</code> both pass clean, and every route under <code>/</code> and <code>/app/*</code> was verified to serve. Any test not run is reported as such - nothing is claimed without being executed.</p>
+<hr>
+<h2>Live Demo Script</h2>
+<p>A suggested order for walking a reviewer through the app in about 5-7 minutes.</p>
+<ol><li><strong>Landing page (<code>/</code>)</strong> - open the app; point out the hero, the four workspace types, and the two CTAs. "Enter CRM" takes you to <code>/app</code> (the workspace); "Explore Workspaces" scrolls to the sections on the same page.</li><li><strong>Dashboard</strong> - real KPI numbers (no <code>[object Object]</code>), the seat-demand-by-locality bar chart, and open-deals-by-stage.</li><li><strong>Contacts</strong> - create a contact with "Also create a lead" checked as MQL: one lead appears. Repeat with SQL: a lead <em>and</em> exactly one deal in the pipeline. Toggle the checkbox off: contact only, no lead.</li><li><strong>Leads</strong> - open a lead's detail modal: seats / locality / duration + a full date-and-time timestamp. Use the readiness gate: a lead missing fields shows "Qualify (N missing)"; an already-qualified lead has no Qualify button at all.</li><li><strong>Deals &amp; Pipeline</strong> - drag a deal into a Closed Won stage; refresh the page: it stayed, with a close date set. Try deleting a stage that still holds deals: the server refuses.</li><li><strong>Activities</strong> - log a "Workspace tour" with a due datetime, complete it, filter by Overdue/Upcoming/Completed. Note that email activities are labelled "Email logged".</li><li><strong>Reports</strong> - KPIs are real numbers; export the CSV; notice closed deals are excluded from open pipeline value and lost value is never shown as revenue.</li><li><strong>Settings</strong> - flip dark mode (survives a page reload), switch currency INR/USD (only the symbol changes), and demonstrate Reset All Data: wrong password is rejected with data intact, and the correct password is documented as a demo convenience, not real security.</li></ol></section>
 
 </body>
 </html>

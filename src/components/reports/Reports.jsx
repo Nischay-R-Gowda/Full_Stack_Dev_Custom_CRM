@@ -18,11 +18,13 @@ export default function Reports() {
 
   const exportCSV = () => {
     if (!data) return
+    // Fields come pre-mapped from the backend as plain { source, count } /
+    // { status, count } / { stageName, count, value } — no `_count` objects.
     const rows = [['Section', 'Name', 'Leads', 'Converted', 'Rate %', 'Value']]
-    ;(data.leadsBySource || []).forEach(s => rows.push(['Leads by Source', s.source, s._count, '', '', '']))
-    ;(data.leadsByStatus || []).forEach(s => rows.push(['Leads by Status', s.status, s._count, '', '', '']))
-    ;(data.dealsByStage || []).forEach(s => rows.push(['Deals by Stage', s.stageId, s._count, '', '', s._sum?.amount || 0]))
-    ;(data.wonLost || []).forEach(s => rows.push(['Won/Lost', s.status, s._count, '', '', s._sum?.amount || 0]))
+    ;(data.leadsBySource || []).forEach(s => rows.push(['Leads by Source', s.source, s.count, '', '', '']))
+    ;(data.leadsByStatus || []).forEach(s => rows.push(['Leads by Status', s.status, s.count, '', '', '']))
+    ;(data.dealsByStage || []).forEach(s => rows.push(['Deals by Stage', s.stageName, s.count, '', '', s.value || 0]))
+    ;(data.wonLost || []).forEach(s => rows.push(['Won/Lost', s.status, s.count, '', '', s.value || 0]))
     ;(data.monthlyRevenue || []).forEach(m => rows.push(['Monthly Revenue', m.month, '', '', '', m.revenue]))
     if (data.conversionRate) rows.push(['Conversion', 'All leads', data.conversionRate.total, data.conversionRate.converted, data.conversionRate.rate, ''])
     ;(data.conversionBySource || []).forEach(c => rows.push(['Conversion by Source', c.source, c.total, c.converted, c.rate, '']))
@@ -32,7 +34,7 @@ export default function Reports() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'nexus-crm-report.csv'
+    a.download = 'nrg-coworking-report.csv'
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -41,10 +43,10 @@ export default function Reports() {
   if (error) return <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">Failed to load reports: {error}</div>
   if (!data) return null
 
-  const sourceData = (data.leadsBySource || []).map(s => ({ name: s.source.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), count: s._count }))
-  const statusData = (data.leadsByStatus || []).map(s => ({ name: s.status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), count: s._count }))
-  const stageData = (data.dealsByStage || []).map(s => ({ name: `Stage ${s.stageId}`, value: s._sum.amount || 0, count: s._count }))
-  const wonLostData = (data.wonLost || []).map(s => ({ name: s.status, value: s._sum.amount || 0, count: s._count }))
+  const sourceData = (data.leadsBySource || []).map(s => ({ name: s.source.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), count: s.count }))
+  const statusData = (data.leadsByStatus || []).map(s => ({ name: s.status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), count: s.count }))
+  const stageData = (data.dealsByStage || []).map(s => ({ name: s.stageName, value: s.value || 0, count: s.count }))
+  const wonLostData = (data.wonLost || []).map(s => ({ name: s.status, value: s.value || 0, count: s.count }))
   const monthlyData = (data.monthlyRevenue || []).map(m => ({ name: m.month, revenue: m.revenue }))
 
   return (
@@ -59,27 +61,27 @@ export default function Reports() {
 
       {/* Summary strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-surface-200 p-4">
-          <p className="text-xs font-medium text-surface-500">Total Leads</p>
-          <p className="text-2xl font-bold text-surface-800 mt-1">{(data.leadsBySource || []).reduce((a, b) => a + b._count, 0)}</p>
+        <div className="bg-white dark:bg-surface-900 dark:border-surface-700 rounded-xl border border-surface-200 p-4">
+          <p className="text-xs font-medium text-surface-500 dark:text-surface-400">Total Leads</p>
+          <p className="text-2xl font-bold text-surface-800 dark:text-surface-100 mt-1">{(data.leadsBySource || []).reduce((a, b) => a + b.count, 0)}</p>
         </div>
-        <div className="bg-white rounded-xl border border-surface-200 p-4">
-          <p className="text-xs font-medium text-surface-500">Total Deals</p>
-          <p className="text-2xl font-bold text-surface-800 mt-1">{(data.dealsByStage || []).reduce((a, b) => a + b._count, 0)}</p>
+        <div className="bg-white dark:bg-surface-900 dark:border-surface-700 rounded-xl border border-surface-200 p-4">
+          <p className="text-xs font-medium text-surface-500 dark:text-surface-400">Total Deals</p>
+          <p className="text-2xl font-bold text-surface-800 dark:text-surface-100 mt-1">{(data.dealsByStage || []).reduce((a, b) => a + b.count, 0)}</p>
         </div>
-        <div className="bg-white rounded-xl border border-surface-200 p-4">
-          <p className="text-xs font-medium text-surface-500">Won Deals</p>
-          <p className="text-2xl font-bold text-emerald-700 mt-1">{(data.wonLost || []).find(w => w.status === 'won')?._count || 0}</p>
+        <div className="bg-white dark:bg-surface-900 dark:border-surface-700 rounded-xl border border-surface-200 p-4">
+          <p className="text-xs font-medium text-surface-500 dark:text-surface-400">Won Deals</p>
+          <p className="text-2xl font-bold text-emerald-700 mt-1">{(data.wonLost || []).find(w => w.status === 'won')?.count || 0}</p>
         </div>
-        <div className="bg-white rounded-xl border border-surface-200 p-4">
-          <p className="text-xs font-medium text-surface-500">Won Revenue</p>
-          <p className="text-2xl font-bold text-emerald-700 mt-1">{formatCurrency((data.wonLost || []).find(w => w.status === 'won')?._sum?.amount || 0)}</p>
+        <div className="bg-white dark:bg-surface-900 dark:border-surface-700 rounded-xl border border-surface-200 p-4">
+          <p className="text-xs font-medium text-surface-500 dark:text-surface-400">Won Revenue</p>
+          <p className="text-2xl font-bold text-emerald-700 mt-1">{formatCurrency((data.wonLost || []).find(w => w.status === 'won')?.value || 0)}</p>
         </div>
       </div>
 
       {/* Conversion metrics */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl border border-surface-200 p-5">
+        <div className="bg-white dark:bg-surface-900 dark:border-surface-700 rounded-xl border border-surface-200 p-5">
           <h3 className="text-sm font-semibold text-surface-700 mb-4">Lead Conversion</h3>
           <div className="space-y-3">
             <div className="flex justify-between items-baseline">
@@ -97,7 +99,7 @@ export default function Reports() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-surface-200 p-5 lg:col-span-2">
+        <div className="bg-white dark:bg-surface-900 dark:border-surface-700 rounded-xl border border-surface-200 p-5 lg:col-span-2">
           <h3 className="text-sm font-semibold text-surface-700 mb-4">Conversion by Lead Source</h3>
           {(data.conversionBySource || []).length === 0 ? (
             <p className="text-sm text-surface-400 py-8 text-center">No source data available</p>
@@ -127,7 +129,7 @@ export default function Reports() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl border border-surface-200 p-5">
+        <div className="bg-white dark:bg-surface-900 dark:border-surface-700 rounded-xl border border-surface-200 p-5">
           <h3 className="text-sm font-semibold text-surface-700 mb-4">Leads by Source</h3>
           {sourceData.length === 0 ? <ChartEmpty /> : (
             <ResponsiveContainer width="100%" height={280}>
@@ -135,7 +137,7 @@ export default function Reports() {
             </ResponsiveContainer>
           )}
         </div>
-        <div className="bg-white rounded-xl border border-surface-200 p-5">
+        <div className="bg-white dark:bg-surface-900 dark:border-surface-700 rounded-xl border border-surface-200 p-5">
           <h3 className="text-sm font-semibold text-surface-700 mb-4">Leads by Status</h3>
           {statusData.length === 0 ? <ChartEmpty /> : (
             <ResponsiveContainer width="100%" height={280}>
@@ -143,7 +145,7 @@ export default function Reports() {
             </ResponsiveContainer>
           )}
         </div>
-        <div className="bg-white rounded-xl border border-surface-200 p-5">
+        <div className="bg-white dark:bg-surface-900 dark:border-surface-700 rounded-xl border border-surface-200 p-5">
           <h3 className="text-sm font-semibold text-surface-700 mb-4">Pipeline Value by Stage</h3>
           {stageData.length === 0 ? <ChartEmpty /> : (
             <ResponsiveContainer width="100%" height={280}>
@@ -151,7 +153,7 @@ export default function Reports() {
             </ResponsiveContainer>
           )}
         </div>
-        <div className="bg-white rounded-xl border border-surface-200 p-5">
+        <div className="bg-white dark:bg-surface-900 dark:border-surface-700 rounded-xl border border-surface-200 p-5">
           <h3 className="text-sm font-semibold text-surface-700 mb-4">Won vs Lost Distribution</h3>
           {wonLostData.length === 0 ? <ChartEmpty /> : (
             <ResponsiveContainer width="100%" height={280}>
@@ -160,7 +162,7 @@ export default function Reports() {
           )}
         </div>
         {monthlyData.length > 0 && (
-          <div className="bg-white rounded-xl border border-surface-200 p-5 lg:col-span-2">
+          <div className="bg-white dark:bg-surface-900 dark:border-surface-700 rounded-xl border border-surface-200 p-5 lg:col-span-2">
             <h3 className="text-sm font-semibold text-surface-700 mb-4">Won Revenue Over Time</h3>
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={monthlyData}><CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} /><YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={v => formatCurrency(v)} /><Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }} formatter={(v) => [formatCurrency(v), 'Revenue']} /><Line type="monotone" dataKey="revenue" stroke="#22c55e" strokeWidth={2} dot={{ fill: '#22c55e', r: 3 }} /></LineChart>

@@ -9,7 +9,7 @@ async function seed() {
   await prisma.stage.deleteMany()
   await prisma.pipeline.deleteMany()
 
-  const admin = await prisma.user.create({ data: { email: 'admin@nexuscrm.com', name: 'Admin User', role: 'admin' } })
+  const admin = await prisma.user.create({ data: { email: 'admin@nrgcoworking.com', name: 'Admin User', role: 'admin' } })
 
   // Create default pipeline with stages
   const pipeline = await prisma.pipeline.create({

@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Tailwind 4 dark variant: activated by adding class="dark" to <html>.
+   The value `var(--tw-dark)` is set in main.jsx on load (reading
+   localStorage nrg.theme) and whenever Settings toggles the theme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-primary-50: #eef2ff;
   --color-primary-100: #e0e7ff;
@@ -24,12 +29,39 @@
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
 }
 
+/* Dark-mode surface overrides — same variable names, dark palette values.
+   The body/scrollbar rules below switch on the .dark class so the whole
+   app inverts together rather than mixing dark sidebar + light content. */
+html.dark {
+  --color-surface-50: #0f172a;
+  --color-surface-100: #1e293b;
+  --color-surface-200: #334155;
+  --color-surface-300: #475569;
+  --color-surface-400: #94a3b8;
+  --color-surface-500: #cbd5e1;
+  --color-surface-600: #e2e8f0;
+  --color-surface-700: #f1f5f9;
+  --color-surface-800: #f8fafc;
+  --color-surface-900: #ffffff;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--color-surface-50);
   color: var(--color-surface-800);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s, color 0.2s;
 }
+
+html.dark body {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+/* In dark mode, surface-800 becomes near-white, so text that was
+   "text-surface-800" on a light card flips to dark text on a dark card —
+   which is wrong. The rule below re-anchors body-level text to light. */
+html.dark body, html.dark #root { color: #e2e8f0; }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -40,3 +72,8 @@ body {
 /* Recharts overrides */
 .recharts-cartesian-grid-horizontal line,
 .recharts-cartesian-grid-vertical line { stroke: var(--color-surface-200); }
+
+/* White cards in light mode → surface-100 in dark mode. */
+html.dark .bg-white { background-color: #1e293b; }
+html.dark .border-surface-200 { border-color: #334155; }
+html.dark .border-surface-300 { border-color: #475569; }

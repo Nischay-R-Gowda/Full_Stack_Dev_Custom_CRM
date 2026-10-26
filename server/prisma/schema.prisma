@@ -61,6 +61,10 @@ model Lead {
   website         String?
   notes           String?
   qualificationNotes String?
+  // ── NRG coworking lead fields (additive, nullable so old rows stay valid) ──
+  seatsRequired   Int?          // how many workspaces/seat-days the lead is asking for
+  locality        String?       // preferred Bengaluru area, e.g. "Whitefield"
+  duration        String?       // requested booking duration, e.g. "1 month"
   nextFollowUp    DateTime?
   expectedValue   Float?
   createdAt       DateTime @default(now())

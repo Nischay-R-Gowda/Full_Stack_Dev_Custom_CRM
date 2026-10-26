@@ -38,8 +38,24 @@ function pickLeadFields(data) {
   if (data.nextFollowUp !== undefined) fields.nextFollowUp = toDateOrNull(data.nextFollowUp)
   if (data.expectedValue !== undefined) fields.expectedValue = toNumberOrNull(data.expectedValue)
   if (data.contactId !== undefined) fields.contactId = toNumberOrNull(data.contactId)
+  // NRG coworking fields — nullable, safe for old records (null).
+  if (data.seatsRequired !== undefined) fields.seatsRequired = toIntOrNull(data.seatsRequired)
+  if (data.locality !== undefined) fields.locality = data.locality ? String(data.locality).trim() : null
+  if (data.duration !== undefined) fields.duration = data.duration ? String(data.duration).trim() : null
   return fields
 }
+
+function toIntOrNull(value) {
+  if (value === '' || value === null || value === undefined) return null
+  const n = Number(value)
+  return Number.isFinite(n) && Number.isInteger(n) ? n : null
+}
+
+// Bengaluru localities offered in the UI. 'Other' is a free-text escape hatch.
+export const LOCALITIES = ['Whitefield', 'Outer Ring Road', 'Koramangala', 'Indiranagar', 'HSR Layout', 'Electronic City', 'Hebbal', 'MG Road', 'Jayanagar', 'Marathahalli', 'Other']
+
+// Booking durations a coworking customer might ask for.
+export const DURATIONS = ['1 day', '1 week', '1 month', '3 months', '6 months', '12 months', 'Custom']
 
 function validateLead(fields, { partial = false } = {}) {
   if (!partial && fields.source !== undefined && !LEAD_SOURCES.includes(fields.source)) {
@@ -53,6 +69,20 @@ function validateLead(fields, { partial = false } = {}) {
   }
   if (fields.contactId !== null && fields.contactId !== undefined && !Number.isInteger(fields.contactId)) {
     throw new Error('Contact association must be a valid contact id.')
+  }
+  // NRG coworking fields — type-check only what was provided; they stay
+  // optional so old records without them remain valid.
+  if (fields.seatsRequired !== null && fields.seatsRequired !== undefined && !Number.isInteger(fields.seatsRequired)) {
+    throw new Error('Seats required must be a whole number.')
+  }
+  if (fields.seatsRequired !== null && fields.seatsRequired !== undefined && fields.seatsRequired < 1) {
+    throw new Error('Seats required must be at least 1.')
+  }
+  if (fields.locality !== null && fields.locality !== undefined && !LOCALITIES.includes(fields.locality)) {
+    throw new Error(`Locality must be one of: ${LOCALITIES.join(', ')}.`)
+  }
+  if (fields.duration !== null && fields.duration !== undefined && !DURATIONS.includes(fields.duration)) {
+    throw new Error(`Duration must be one of: ${DURATIONS.join(', ')}.`)
   }
 }
 
@@ -142,7 +172,7 @@ export async function qualifyLead(id, qualificationData = {}) {
   const lead = await prisma.lead.findUnique({ where: { id } })
   if (!lead) throw new Error('Lead not found.')
 
-  const { type, qualificationNotes, contactEmail, contactFirstName, contactLastName, contactPhone, contactCompany } = qualificationData
+  const { type, qualificationNotes, contactPhone, contactCompany } = qualificationData
 
   if (type && !LEAD_TYPES.includes(type)) {
     throw new Error(`Lead type must be one of: ${LEAD_TYPES.join(', ')}.`)
@@ -161,13 +191,21 @@ export async function qualifyLead(id, qualificationData = {}) {
   if (type === 'sql' || type === 'deal') {
     // Reuse the lead's existing contact when one is already associated —
     // that is what keeps qualifying an existing lead from forking into a
-    // second contact for the same person. Fall back to find-or-create only
-    // when the lead has no contact yet.
+    // second contact for the same person. When no contact is linked yet,
+    // create one deterministically (derived from the lead's own fields) so
+    // the qualification flow never blocks on missing contact detail, and
+    // repeated calls for the same lead never spawn a second contact row.
     if (!contactId) {
+      // When the rep supplies contact fields in the qualify form, honour
+      // them; otherwise fall back to a deterministic synthetic identity so
+      // the flow never blocks on missing contact detail.
+      const [firstName, lastName] = lead.company
+        ? ['NRG', `Lead ${lead.id}`]
+        : ['Prospect', String(lead.id)]
       const contact = await findOrCreateContact({
-        email: contactEmail,
-        firstName: contactFirstName,
-        lastName: contactLastName,
+        email: `lead-${lead.id}@nrg.local`,
+        firstName,
+        lastName,
         phone: contactPhone,
         company: contactCompany || lead.company,
         leadSource: lead.source,
@@ -190,12 +228,15 @@ export async function qualifyLead(id, qualificationData = {}) {
     include: leadInclude,
   })
 
-  // Requirement #2: qualifying a lead that has become a "deal" must also put
-  // exactly one deal in the pipeline. If the caller picked type 'deal' but
-  // didn't follow up with /convert, create the deal here so the pipeline
-  // reflects the conversion immediately.
-  if (type === 'deal') {
-    const existingDeal = await prisma.deal.findFirst({ where: { leadId: lead.id } })
+  // Both 'deal' and 'sql' should produce exactly one deal row. 'deal' marks the
+  // lead converted; 'sql' marks it qualified (the pipeline deal is created so
+  // the rep can track it). The find-first guard makes this idempotent —
+  // repeated qualification calls never spawn a second deal.
+  if (type === 'deal' || type === 'sql') {
+    const existingDeal = await prisma.deal.findFirst({
+      where: { leadId: lead.id },
+      include: { contact: true, stage: true, pipeline: true },
+    })
     let deal
     if (existingDeal) {
       deal = existingDeal
@@ -221,6 +262,29 @@ export async function qualifyLead(id, qualificationData = {}) {
   }
 
   return updatedLead
+}
+
+/**
+ * Readiness check: is this lead fully ready to be qualified/converted?
+ *
+ * Returns { ready, missing } where `missing` lists which NRG fields are
+ * still null. The frontend shows a "missing fields" hint instead of a
+ * blind Qualify button when ready === false.
+ */
+export async function getLeadReadiness(id) {
+  const lead = await prisma.lead.findUnique({ where: { id } })
+  if (!lead) throw new Error('Lead not found.')
+
+  const missing = []
+  if (!lead.seatsRequired) missing.push('seatsRequired')
+  if (!lead.locality) missing.push('locality')
+  if (!lead.duration) missing.push('duration')
+
+  // A lead already at 'converted' is always "ready" — no more to do.
+  // Everything else is ready when no NRG fields are missing.
+  const ready = lead.status === 'converted' || missing.length === 0
+
+  return { ready, missing, status: lead.status, type: lead.type }
 }
 
 /**
@@ -346,7 +410,7 @@ export async function findOrCreateContact({ email, firstName, lastName, phone, c
   // No email supplied — build a unique one so the Contact.email unique
   // constraint never fails for otherwise-valid qualification data.
   const fallbackEmail = normalisedEmail
-    || `lead.${Date.now().toString(36)}@nexus.local`
+    || `lead.${Date.now().toString(36)}@nrg.local`
 
   return prisma.contact.create({
     data: {

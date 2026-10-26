@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { getLeads, getLead, createLead, updateLead, deleteLead, qualifyLead, convertLeadToDeal } from '../controllers/leads.js'
+import { getLeads, getLead, createLead, updateLead, deleteLead, qualifyLead, convertLeadToDeal, getLeadReadiness } from '../controllers/leads.js'
 
 const router = Router()
 
@@ -24,6 +24,11 @@ router.post('/:id/qualify', (req, res) => {
 // 201 because this route creates a Deal row, not just mutates the Lead.
 router.post('/:id/convert', (req, res) => {
   convertLeadToDeal(Number(req.params.id), req.body).then(data => res.status(201).json(data)).catch(err => res.status(400).json({ error: err.message }))
+})
+// Qualification gate — the UI calls this to decide whether to show the
+// "Qualify" button or a "missing fields" hint instead.
+router.get('/:id/readiness', (req, res) => {
+  getLeadReadiness(Number(req.params.id)).then(data => res.json(data)).catch(err => res.status(404).json({ error: err.message }))
 })
 
 export default router

@@ -1,4 +1,4 @@
-# Setup and Run Guide — Nexus CRM
+# Setup and Run Guide — NRG CO-WORKING CRM
 
 ## Prerequisites
 - Node.js 18+ (tested with v24.14.0)

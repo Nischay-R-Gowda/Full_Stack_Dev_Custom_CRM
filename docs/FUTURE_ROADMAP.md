@@ -1,4 +1,4 @@
-# Future Roadmap — Nexus CRM
+# Future Roadmap — NRG CO-WORKING CRM
 
 ## Phase 1: Authentication & Security
 - [ ] JWT-based authentication

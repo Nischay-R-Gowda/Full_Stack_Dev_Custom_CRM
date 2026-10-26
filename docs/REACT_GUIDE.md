@@ -1,4 +1,4 @@
-# React Guide — Nexus CRM
+# React Guide — NRG CO-WORKING CRM
 
 ## Core Concepts
 

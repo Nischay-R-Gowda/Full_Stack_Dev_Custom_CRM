@@ -1,4 +1,4 @@
-# Architecture Guide — Nexus CRM
+# Architecture Guide — NRG CO-WORKING CRM
 
 ## System Architecture
 

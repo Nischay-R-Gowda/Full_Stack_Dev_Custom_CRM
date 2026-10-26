@@ -1,9 +1,9 @@
-# Final Presentation Outline — Nexus CRM
+# Final Presentation Outline — NRG CO-WORKING CRM
 
 ## Presentation Structure (~15-20 minutes)
 
 ### Slide 1: Title
-- Project: Nexus CRM
+- Project: NRG CO-WORKING CRM
 - Student name and ID
 - Course: Full Stack Development 1
 - University and semester

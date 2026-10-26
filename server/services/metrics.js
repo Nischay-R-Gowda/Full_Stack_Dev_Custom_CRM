@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '../utils/db.js'
 
 /**
  * Conversion metrics shared by the dashboard and the reports page.

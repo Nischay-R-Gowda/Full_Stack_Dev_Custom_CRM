@@ -74,4 +74,10 @@ export const api = {
 
   // Reports
   getReports: () => apiRequest('/reports'),
+
+  // Lead readiness — GET /api/leads/:id/readiness
+  getLeadReadiness: (id) => apiRequest(`/leads/${id}/readiness`),
+
+  // Settings
+  resetAllData: (password) => apiRequest('/settings/reset', { method: 'POST', body: JSON.stringify({ password }) }),
 }

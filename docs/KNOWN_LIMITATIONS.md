@@ -1,4 +1,4 @@
-# Known Limitations — Nexus CRM
+# Known Limitations — NRG CO-WORKING CRM
 
 ## Authentication
 - **No authentication or authorization** — All APIs are open. This is documented as a known limitation. Adding auth would require session management (JWT or sessions), protected routes, and user-specific data isolation.

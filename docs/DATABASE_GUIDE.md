@@ -1,4 +1,4 @@
-# Database Guide — Nexus CRM
+# Database Guide — NRG CO-WORKING CRM
 
 ## Schema Overview
 

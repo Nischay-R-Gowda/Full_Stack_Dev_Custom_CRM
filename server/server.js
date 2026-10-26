@@ -1,6 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from './utils/db.js'
 import contactRoutes from './routes/contacts.js'
 import leadRoutes from './routes/leads.js'
 import dealRoutes from './routes/deals.js'
@@ -9,8 +9,8 @@ import dashboardRoutes from './routes/dashboard.js'
 import activitiesRoutes from './routes/activities.js'
 import sourcesRoutes from './routes/sources.js'
 import reportsRoutes from './routes/reports.js'
+import settingsRoutes from './routes/settings.js'
 
-const prisma = new PrismaClient()
 const app = express()
 
 app.use(cors())
@@ -24,6 +24,7 @@ app.use('/api/dashboard', dashboardRoutes)
 app.use('/api/activities', activitiesRoutes)
 app.use('/api/sources', sourcesRoutes)
 app.use('/api/reports', reportsRoutes)
+app.use('/api/settings', settingsRoutes)
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }))
 

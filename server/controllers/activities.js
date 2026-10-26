@@ -1,6 +1,8 @@
 import { prisma, getSystemUserId } from '../utils/db.js'
 
-const ACTIVITY_TYPES = ['call', 'email', 'meeting', 'note', 'task']
+// 'tour' is an NRG-specific activity type: a workspace tour shown to a lead or
+// a prospective member. The UI labels it "Workspace tour".
+const ACTIVITY_TYPES = ['call', 'email', 'meeting', 'tour', 'note', 'task']
 const ACTIVITY_PRIORITIES = ['low', 'medium', 'high']
 
 function toDateOrNull(value) {

@@ -1,4 +1,5 @@
-import { prisma } from '../utils/db.js'
+import { prisma, getSystemUserId } from '../utils/db.js'
+import { generateLeadNumber, LOCALITIES, DURATIONS } from './leads.js'
 
 // Lifecycle stages a Contact can occupy, mirrored from the frontend so the
 // API can reject nonsense values instead of silently storing them.
@@ -72,13 +73,98 @@ export async function getContact(id) {
 }
 
 export async function createContact(data) {
-  const fields = pickContactFields(data)
+  const { createLead: createLeadPayload, ...contactData } = data
+  const fields = pickContactFields(contactData)
   validateContact(fields)
 
   const existing = await prisma.contact.findUnique({ where: { email: fields.email } })
   if (existing) throw new Error('A contact with this email already exists.')
 
-  return prisma.contact.create({ data: fields, include: contactInclude })
+  const contact = await prisma.contact.create({ data: fields, include: contactInclude })
+
+  // "Also create a lead" — when the checkbox was ticked, create exactly one
+  // Lead linked to this contact. MQL (default) leaves the lead at status 'new';
+  // SQL (chosen manually) sets it to 'qualified' and creates a deal in the
+  // default pipeline's first stage.
+  if (createLeadPayload && createLeadPayload.enabled) {
+    const leadPayload = createLeadPayload
+    const leadType = leadPayload.type === 'sql' ? 'sql' : 'mql'
+    const leadStatus = leadType === 'sql' ? 'qualified' : 'new'
+
+    const leadFields = {
+      leadNumber: generateLeadNumber(),
+      status: leadStatus,
+      type: leadType,
+      source: leadPayload.source || 'manual',
+      company: leadPayload.company ? String(leadPayload.company).trim() : (fields.company || null),
+      companySize: leadPayload.companySize || null,
+      industry: leadPayload.industry || null,
+      website: leadPayload.website || null,
+      notes: leadPayload.notes ? String(leadPayload.notes).trim() : null,
+      qualificationNotes: leadPayload.qualificationNotes ? String(leadPayload.qualificationNotes).trim() : null,
+      nextFollowUp: leadPayload.nextFollowUp ? new Date(leadPayload.nextFollowUp) : null,
+      expectedValue: leadPayload.expectedValue ? Number(leadPayload.expectedValue) : null,
+      seatsRequired: leadPayload.seatsRequired ? Number(leadPayload.seatsRequired) : null,
+      locality: leadPayload.locality ? String(leadPayload.locality).trim() : null,
+      duration: leadPayload.duration ? String(leadPayload.duration).trim() : null,
+      contactId: contact.id,
+      createdById: await getSystemUserId(),
+    }
+
+    // Whitespace/empty strings should be stored as null, not '' — Prisma's
+    // String? accepts empty strings, which would render as blank rows later.
+    if (!leadFields.company) leadFields.company = null
+    if (!leadFields.locality) leadFields.locality = null
+    if (!leadFields.duration) leadFields.duration = null
+
+    if (LOCALITIES.length && leadFields.locality && !LOCALITIES.includes(leadFields.locality)) {
+      throw new Error(`Locality must be one of: ${LOCALITIES.join(', ')}.`)
+    }
+    if (DURATIONS.length && leadFields.duration && !DURATIONS.includes(leadFields.duration)) {
+      throw new Error(`Duration must be one of: ${DURATIONS.join(', ')}.`)
+    }
+    if (leadFields.seatsRequired !== null && (leadFields.seatsRequired < 1 || !Number.isInteger(leadFields.seatsRequired))) {
+      throw new Error('Seats required must be a positive whole number.')
+    }
+
+    const lead = await prisma.lead.create({ data: leadFields, include: { contact: true } })
+
+    // SQL chosen manually → create one deal (dedup-guarded: contact+lead is
+    // brand new here, so there can be no existing deal for this lead).
+    let deal = null
+    if (leadType === 'sql') {
+      const { stage, pipelineId } = await resolveDefaultStage()
+      deal = await prisma.deal.create({
+        data: {
+          dealName: leadPayload.dealName && String(leadPayload.dealName).trim()
+            || `${leadFields.company || contact.firstName + ' ' + contact.lastName} Opportunity`,
+          amount: leadPayload.amount ? Number(leadPayload.amount) : (leadFields.expectedValue ?? 0),
+          probability: 50,
+          expectedCloseDate: leadPayload.expectedCloseDate ? new Date(leadPayload.expectedCloseDate) : null,
+          notes: null,
+          contactId: contact.id,
+          stageId: stage.id,
+          pipelineId,
+          leadId: lead.id,
+          createdById: await getSystemUserId(),
+        },
+        include: { contact: true, stage: true, pipeline: true },
+      })
+    }
+
+    return { contact, lead, deal }
+  }
+
+  return contact
+}
+
+async function resolveDefaultStage() {
+  const pipeline = await prisma.pipeline.findFirst({ where: { isDefault: true }, orderBy: { id: 'asc' } })
+    || await prisma.pipeline.findFirst({ orderBy: { id: 'asc' } })
+  if (!pipeline) throw new Error('No pipeline exists. Create a pipeline before adding an SQL lead.')
+  const stage = await prisma.stage.findFirst({ where: { pipelineId: pipeline.id }, orderBy: { position: 'asc' } })
+  if (!stage) throw new Error('The target pipeline has no stages. Add a stage first.')
+  return { stage, pipelineId: pipeline.id }
 }
 
 export async function updateContact(id, data) {

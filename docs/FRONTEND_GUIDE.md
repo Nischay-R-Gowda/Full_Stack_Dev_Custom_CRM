@@ -1,4 +1,4 @@
-# Frontend Guide — Nexus CRM
+# Frontend Guide — NRG CO-WORKING CRM
 
 ## File Structure
 ```

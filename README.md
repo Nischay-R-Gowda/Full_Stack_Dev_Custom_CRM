@@ -1,4 +1,4 @@
-# NEXUS CRM
+# NRG CO-WORKING CRM
 
 A full-stack Customer Relationship Management web application built for a university semester project and designed to evolve into a production-grade CRM product.
 
@@ -109,4 +109,4 @@ See `docs/` for:
 
 ## License
 
-University semester project — Nexus CRM.
+University semester project — NRG CO-WORKING CRM.

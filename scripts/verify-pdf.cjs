@@ -4,7 +4,7 @@
 const fs = require('fs')
 const zlib = require('zlib')
 
-const pdf = fs.readFileSync(process.argv[2] || 'docs/NEXUS_CRM_COMPLETE_LEARNING_GUIDE.pdf')
+const pdf = fs.readFileSync(process.argv[2] || 'docs/NRG_COWORKING_CRM_COMPLETE_LEARNING_GUIDE.pdf')
 const raw = pdf.toString('latin1')
 
 const streamRe = /stream\r?\n([\s\S]*?)\r?\nendstream/g
@@ -44,7 +44,7 @@ console.log('recovered text length: ' + joined.length)
 console.log('sample: ' + JSON.stringify(joined.slice(0, 200)))
 
 const probes = [
-  'Nexus CRM',
+  'NRG CO-WORKING CRM',
   'Project Master Overview',
   'Viva Question Bank',
   'API Reference',

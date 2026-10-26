@@ -1,8 +1,44 @@
-# Project Master Document — Nexus CRM
+# Project Master Document — NRG CO-WORKING CRM
+
+## 0. NRG Addendum (newest)
+
+This CRM has been rebranded and extended from the original Nexus CRM into
+**NRG CO-WORKING CRM** — a HubSpot-style sales tool for a Bengaluru coworking
+chain. New in this version, compared to the original documents below:
+
+- **Public landing page** at `/` (workspaces: hot desks, dedicated desks,
+  private offices, meeting rooms; Bengaluru localities) with "Enter CRM"
+  (`/app`) and "Explore Workspaces" (same-page anchor) CTAs; all CRM pages now
+  live under `/app/*`.
+- **Coworking lead fields**: `seatsRequired`, `locality` (Whitefield …
+  Marathahalli, Other) and `duration` (1 day … 12 months, Custom) — nullable
+  Prisma columns, whitelisted server-side, null-safe for older records.
+- **Contact form "Also create a lead"**: MQL (default) or SQL; SQL
+  auto-creates exactly one deal (idempotent via `Deal.leadId @unique` +
+  findFirst guard).
+- **Qualification readiness**: `GET /api/leads/:id/readiness` returns missing
+  coworking fields; the UI hides Qualify once a lead is qualified/converted/
+  disqualified.
+- **Activities** gained a `tour` (workspace tour) type, due *datetime*,
+  priority, association pickers, overdue/upcoming/completed views, and
+  "Email logged" (never "sent") labelling.
+- **Settings**: light/dark theme, display name, currency (INR/USD) and date
+  format — localStorage-preserved, presentation-only (stored data untouched);
+  **Reset All Data** (case-sensitive password `Nischay`, server-validated,
+  FK-safe transaction; documented as a demo convenience, not security).
+- **Reports/Dashboard**: `[object Object]` KPI bug fixed (groupBy results are
+  mapped to plain numbers + resolved stage names); new "Seat Demand by
+  Locality" panel; closed deals excluded from open pipeline value; lost value
+  is never counted as revenue.
+- **Dates** are stored as ISO and rendered locally as
+  "19 Oct 2026, 10:35 PM" everywhere a record timestamp appears.
+
+Everything below still applies; read the addendum first, then the original
+sections.
 
 ## 1. Project Overview
 
-**Name:** Nexus CRM
+**Name:** NRG CO-WORKING CRM (originally "Nexus CRM", rebranded in this version)
 **Type:** Full-stack CRM web application
 **Purpose:** Semester 1 project + personal mega project
 **Timeline:** ~14 days, 3-4 hours/day

@@ -1,4 +1,4 @@
-# Requirements — Nexus CRM
+# Requirements — NRG CO-WORKING CRM
 
 ## Functional Requirements
 

@@ -1,4 +1,4 @@
-import { Users, UserPlus, GitBranch, Handshake, TrendingUp, Target } from 'lucide-react'
+import { Users, UserPlus, GitBranch, Handshake, TrendingUp, Target, MapPin } from 'lucide-react'
 import { Card, CardSkeleton } from '../ui/Card'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
 import { api } from '../../services/api'
@@ -6,6 +6,9 @@ import { formatCurrency, formatRelativeTime } from '../../utils/constants'
 import useResource from '../../hooks/useResource'
 
 const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#22c55e', '#3b82f6', '#ef4444']
+
+// Capitalise a raw key like "google_ads" → "Google Ads".
+const pretty = s => s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 
 export default function Dashboard() {
   // Every dashboard figure is derived from this single request — nothing on
@@ -24,8 +27,12 @@ export default function Dashboard() {
 
   if (!data) return null
 
-  const sourceChart = (data?.leadsBySource || []).map(s => ({ name: s.source.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), value: s._count }))
-  const statusChart = (data?.leadsByStatus || []).map(s => ({ name: s.status.charAt(0).toUpperCase() + s.status.slice(1), value: s._count }))
+  // The backend now returns pre-mapped { name, value } chart data — no more
+  // raw Prisma groupBy objects, so the KPIs and charts always render real
+  // numbers instead of `[object Object]`.
+  const sourceChart = (data?.leadsBySource || []).map(s => ({ name: pretty(s.name), value: s.value }))
+  const statusChart = (data?.leadsByStatus || []).map(s => ({ name: pretty(s.name), value: s.value }))
+  const seatChart = (data?.seatDemandByLocality || []).map(s => ({ name: s.name, value: s.seats }))
   const conversionRate = data?.conversionRate?.rate || 0
 
   return (
@@ -102,6 +109,44 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* NRG: Seat Demand by Locality */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-xl border border-surface-200 p-5">
+          <h3 className="text-sm font-semibold text-surface-700 mb-4 flex items-center gap-2"><MapPin className="w-4 h-4 text-primary-600" />Seat Demand by Locality</h3>
+          {seatChart.length === 0 ? (
+            <p className="text-sm text-surface-400 py-10 text-center">No leads with locality data yet. Add a lead with a preferred Bengaluru locality.</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={seatChart}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px' }} />
+                <Bar dataKey="value" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Seats Requested" />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* Deals by stage (open pipeline) */}
+        <div className="bg-white rounded-xl border border-surface-200 p-5">
+          <h3 className="text-sm font-semibold text-surface-700 mb-4">Open Deals by Stage</h3>
+          {(data?.dealsByStage || []).length === 0 ? (
+            <p className="text-sm text-surface-400 py-10 text-center">No open deals in the pipeline.</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={(data?.dealsByStage || []).map(s => ({ name: s.name, value: s.value }))}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px' }} />
+                <Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} name="Pipeline Value" />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+
       {/* Recent Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl border border-surface-200 p-5">
@@ -111,7 +156,7 @@ export default function Dashboard() {
               <div key={lead.id} className="flex items-center justify-between p-3 hover:bg-surface-50 rounded-lg transition-colors">
                 <div>
                   <p className="text-sm font-medium text-surface-800">{lead.contact?.firstName} {lead.contact?.lastName}</p>
-                  <p className="text-xs text-surface-500">{lead.company} · {lead.source.replace(/_/g, ' ')}</p>
+                  <p className="text-xs text-surface-500">{lead.company} · {pretty(lead.source)}</p>
                 </div>
                 <span className="text-xs text-surface-400">{formatRelativeTime(lead.createdAt)}</span>
               </div>

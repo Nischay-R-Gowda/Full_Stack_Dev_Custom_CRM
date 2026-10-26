@@ -5,6 +5,13 @@ import { Toaster } from 'react-hot-toast'
 import App from './App.jsx'
 import './index.css'
 
+// Apply the persisted theme before the first paint so there is no flash of
+// the wrong color scheme on every page load.
+;(function initTheme() {
+  const theme = localStorage.getItem('nrg.theme') || 'light'
+  document.documentElement.classList.toggle('dark', theme === 'dark')
+})()
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>

@@ -1,4 +1,4 @@
-# Testing Report — Nexus CRM
+# Testing Report — NRG CO-WORKING CRM
 
 ## Environment
 - OS: Windows 11 Home Single Language

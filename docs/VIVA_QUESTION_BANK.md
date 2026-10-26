@@ -1,11 +1,11 @@
-# Viva Question Bank — Nexus CRM
+# Viva Question Bank - NRG CO-WORKING CRM
 
 ## 100+ Questions with Answers
 
 ### General / Introduction
 
-**Q1. What is Nexus CRM?**
-A: Nexus CRM is a full-stack Customer Relationship Management web application. It helps businesses manage contacts, leads, deals, and sales pipelines. It's built with React (frontend), Express.js (backend), and SQLite with Prisma ORM (database).
+**Q1. What is NRG CO-WORKING CRM?**
+A: NRG CO-WORKING CRM is a full-stack Customer Relationship Management web application. It helps businesses manage contacts, leads, deals, and sales pipelines. It's built with React (frontend), Express.js (backend), and SQLite with Prisma ORM (database).
 
 **Q2. What problem does this CRM solve?**
 A: It helps small and medium businesses track leads, manage contacts, and visualize their sales pipeline. Instead of using spreadsheets or multiple disconnected tools, everything is in one place.
@@ -226,7 +226,7 @@ A: CORS (Cross-Origin Resource Sharing) allows the frontend (port 5173) to make 
 A: SQLite is a file-based relational database. It doesn't require a server — the database is a single file. Perfect for development and small applications.
 
 **Q52. What is an ERD (Entity Relationship Diagram)?**
-A: A diagram showing database tables and their relationships. In Nexus CRM: User→Lead, Contact→Lead/Deal/Activity, Pipeline→Stage→Deal, etc.
+A: A diagram showing database tables and their relationships. In NRG CO-WORKING CRM: User→Lead, Contact→Lead/Deal/Activity, Pipeline→Stage→Deal, etc.
 
 **Q53. What are foreign keys?**
 A: A foreign key is a column that references a primary key in another table. Example: `deal.contactId` references `contact.id`. This creates relationships between tables.
@@ -258,7 +258,7 @@ A: A visual representation of where deals are in the sales process. Stages typic
 A: A methodology to rank leads based on their likelihood to convert. Not fully implemented in this MVP, but the qualification system is the foundation.
 
 **Q62. What is conversion rate?**
-A: The percentage of leads that become customers. In Nexus CRM: `(converted leads / total leads) * 100`.
+A: The percentage of leads that become customers. In NRG CO-WORKING CRM: `(converted leads / total leads) * 100`.
 
 **Q63. What is pipeline value?**
 A: The total monetary value of all open (not yet won or lost) deals in the pipeline. Used for sales forecasting.
@@ -393,8 +393,94 @@ A: A centralized module (`src/services/api.js`) that wraps all API calls. It han
 **Q100. What would you improve if you had more time?**
 A: Authentication, drag-and-drop pipeline, email integration, pagination, testing suite, better error boundaries, mobile optimization, dark mode, real-time updates with WebSockets.
 
-**Q101. Is Nexus CRM production-ready?**
+**Q101. Is NRG CO-WORKING CRM production-ready?**
 A: No. It lacks authentication, proper error boundaries, comprehensive testing, pagination, and production-grade infrastructure. It's a solid semester MVP that demonstrates full-stack development skills.
 
 **Q102. What did you learn from this project?**
 A: Full React component architecture, state management with hooks, REST API design, database modeling with Prisma, responsive CSS with Tailwind, data visualization with Recharts, and end-to-end debugging.
+
+
+---
+
+## NRG CO-WORKING Specific Questions (Q103-Q124)
+
+**Q103. What is NRG CO-WORKING CRM and who is it for?**
+A: It is a HubSpot-style sales CRM purpose-built for NRG, a Bengaluru coworking chain. Sales reps track prospective members from the first enquiry (lead) through MQL/SQL qualification to a booked deal (desks or offices). The app is organised around a public landing page, an "Enter CRM" workspace, contacts, leads, deals, pipelines, activities, reports and settings.
+
+**Q104. Why build a CRM for a coworking business instead of using a generic one?**
+A: Coworking sales has domain-specific data - how many seats a prospect wants, which Bengaluru locality they prefer and for how long. A generic CRM forces these into free-text notes; NRG CRM makes them structured, filterable fields (seatsRequired, locality, duration), which powers seat-demand analytics by locality on the dashboard.
+
+**Q105. What are the three new coworking lead fields and how are they stored?**
+A: `seatsRequired` (Int?), `locality` (String?) and `duration` (String?) were added to the `Lead` Prisma model as nullable columns and pushed to SQLite with `prisma db push` (additive, no data loss). Nullable so the existing 20+ leads stay valid. Locality is whitelisted against a `LOCALITIES` array (Whitefield, Outer Ring Road, Koramangala, Indiranagar, HSR Layout, Electronic City, Hebbal, MG Road, Jayanagar, Marathahalli, Other) and duration against `DURATIONS` (1 day ... 12 months, Custom) - the server validates both so invalid values never reach the DB.
+
+**Q106. Walk through the "also create a lead" checkbox on the contact form.**
+A: When checked on *create* only (not on edit), the contact form exposes lead type (MQL default / SQL), source, seats, locality and duration. On submit the frontend attaches a `createLead` payload. The backend `createContact` inserts the contact, then - only if `createLead.enabled` - creates exactly one `Lead` linked by `contactId`, with status `new` for MQL or `qualified` for SQL. For SQL it also resolves the pipeline first open stage and creates exactly one deal via a dedup guard.
+
+**Q107. What happens if the lead type is SQL in that sub-form?**
+A: The lead is created with `type: 'sql'`, `status: 'qualified'`, and a deal is automatically created in the pipeline first non-closed stage so the pipeline immediately shows the open opportunity. A toast confirms "deal added to pipeline".
+
+**Q108. How does the SQL-to-deal rule stay safe when called repeatedly?**
+A: `Deal.leadId` is a `@unique` column. `qualifyLead` first runs `prisma.deal.findFirst({ where: { leadId } })` and returns that existing deal if found; only when none exists does it create one. So re-qualifying the same lead any number of times creates exactly one deal - the constraint is enforced both in code and by the database.
+
+**Q109. What is the readiness gate before qualifying a lead?**
+A: `GET /api/leads/:id/readiness` returns `{ ready, missing[] }` where missing lists any of seatsRequired/locality/duration that are still null, and ready is true when the status is qualified/converted or all three fields are present. The UI shows "Qualify (N fields missing)" when incomplete and hides the Qualify button entirely once a lead is qualified, converted or disqualified - so a lead can never be re-qualified blindly.
+
+**Q110. What is the lead lifecycle in this app?**
+A: New - Attempting - Connected - Qualified (MQL/SQL) - Converted (Deal) - Closed Won / Closed Lost, with a Disqualified terminal state. Each transition is a deliberate action (status update or qualification), not a side-effect, and the lead id and contactId are preserved throughout so history never forks into a duplicate record.
+
+**Q111. What is the "tour" activity type and why does it exist?**
+A: A workspace tour - a sales rep showing a prospect the NRG facility. It was added to the backend `ACTIVITY_TYPES` list (call, email, meeting, tour, note, task) and the frontend `ACTIVITY_TYPES` map with its own MapPin icon and "Workspace tour" label.
+
+**Q112. Why do email activities say "Email logged" instead of "Email sent"?**
+A: The app has no mail integration - logging an email is a CRM record, not an outbound send. The label deliberately says "Email logged" so a reviewer cannot mistake the feature for real email delivery. The same rule applies to every simulated action in the demo.
+
+**Q113. What does the Activities page support end to end?**
+A: Create, edit, complete/reopen (toggle), and delete; association pickers for contact/lead/deal; a due datetime (`<input type="datetime-local">`, stored as ISO); priority low/medium/high; type filter; free-text search; and Overdue / Upcoming / Completed tabs. Overdue is computed against the current time and refreshed by a 60-second interval.
+
+**Q114. How do display preferences (currency, date format, theme, display name) work without corrupting data?**
+A: They are stored under `nrg.*` keys in **localStorage** - presentation only. `formatCurrency`/`formatDateTime` read the setting at render time; the database always stores plain numbers and ISO timestamps. Switching INR to USD changes the symbol, not the amount; switching date format re-renders existing rows without rewriting them.
+
+**Q115. How does dark mode work in Tailwind CSS 4?**
+A: `index.css` declares `@custom-variant dark (&:where(.dark, .dark *));` - the class strategy. A `dark` class on `<html>` activates it. `initTheme()` in `main.jsx` reads `nrg.theme` from localStorage *before* React renders (so there is no flash of the wrong theme), and the Settings page toggles the class and persists the value.
+
+**Q116. Explain the Reset All Data feature and its security caveat.**
+A: `POST /api/settings/reset` takes a password; the backend validates the exact case-sensitive string `Nischay` *server-side*. On a match it runs one `prisma.$transaction` deleting in FK-safe order (activities, notifications, deals, leads, contacts) while preserving users, pipelines, stages and schema. Wrong password gives HTTP 400 and zero rows touched. This is a demo convenience, **not** security: the endpoint is unauthenticated, so it must never be exposed publicly.
+
+**Q117. Why did the dashboard KPIs show [object Object] before the fix, and how was it fixed?**
+A: Prisma `groupBy` with `_count: { _all: true }` returns `{ _count: { _all: n } }`, and the old code rendered `row._count` directly (an object, not the number). The backend metrics layer now maps every groupBy result to plain `{ name, value }`, `{ source, count }` or `{ stageName, count, value }` shapes and a lookup table resolves stage names (no more "Stage 14"). KPI cards and charts consume the plain numbers, and every chart has an empty-state fallback.
+
+**Q118. What does "seat demand by locality" show and how is it computed?**
+A: A new dashboard panel: `groupBy` locality over leads, summing `seatsRequired`, so NRG can see which localities want the most desks. Returned as `{ name, seats, leads }` and rendered as a bar chart.
+
+**Q119. How is pipeline value computed and what is excluded?**
+A: Open pipeline value is the sum of `amount` over deals whose status is `open`, i.e. not in a Closed Won / Closed Lost stage. Won revenue counts only closed-won deals; **lost value is never treated as revenue** anywhere on the dashboard or in reports.
+
+**Q120. Why are all CRM pages nested under /app with the landing page at / ?**
+A: The public landing page (hero, workspace types, "Enter CRM" CTA) is unauthenticated marketing surface; the app itself lives under `/app/*` with Sidebar and Header in a shared `AppShell`. "Enter CRM" navigates to `/app`; "Exit to Landing" navigates back to `/`.
+
+**Q121. What does "Explore Workspaces" on the landing page do?**
+A: It smooth-scrolls to the `#workspaces` section on the same page - a real, working anchor, not a dead link. The four cards are Hot Desks, Dedicated Desks, Private Offices and Meeting Rooms.
+
+**Q122. How are dates stored versus displayed throughout the app?**
+A: Stored as ISO-8601 timestamps (Prisma `DateTime`); rendered in the browser local timezone. `formatDateTime` produces "19 Oct 2026, 10:35 PM" and honours the user's `nrg.dateFormat` choice (DD/MM/YYYY or DD Mon YYYY). Every list row, detail modal and "Recent Activity" block shows date + time, not date-only.
+
+**Q123. What changed in the Kanban board for deals?**
+A: The pipeline filter is coerced with `Number()` so `pipelineFilter=3` matches stage `pipelineId: 3`; stage columns now derive their deal lists from the *actual* `stageId` (no hard-coded counts); columns with zero deals show an empty state; and the backend `moveDealStage` sets `status` (open/won/lost) plus `actualCloseDate` when a deal lands in a closed stage, so a refresh shows the deal in the correct column with the right close date.
+
+**Q124. How was the app tested before you declared it done?**
+A: Three layers: (1) a Node E2E harness hitting the live API on port 5000 - 19 checks covering contact+lead+deal creation, idempotent qualification, the readiness endpoint, reset with wrong/correct password, and the tour activity type; (2) a data-integrity harness proving stage moves persist and the stage-deletion guard blocks deletion while deals exist; (3) `npm run build` and `npm run lint` both pass clean, and every route under `/` and `/app/*` was verified to serve. Any test not run is reported as such - nothing is claimed without being executed.
+
+---
+
+## Live Demo Script
+
+A suggested order for walking a reviewer through the app in about 5-7 minutes.
+
+1. **Landing page (`/`)** - open the app; point out the hero, the four workspace types, and the two CTAs. "Enter CRM" takes you to `/app` (the workspace); "Explore Workspaces" scrolls to the sections on the same page.
+2. **Dashboard** - real KPI numbers (no `[object Object]`), the seat-demand-by-locality bar chart, and open-deals-by-stage.
+3. **Contacts** - create a contact with "Also create a lead" checked as MQL: one lead appears. Repeat with SQL: a lead *and* exactly one deal in the pipeline. Toggle the checkbox off: contact only, no lead.
+4. **Leads** - open a lead's detail modal: seats / locality / duration + a full date-and-time timestamp. Use the readiness gate: a lead missing fields shows "Qualify (N missing)"; an already-qualified lead has no Qualify button at all.
+5. **Deals & Pipeline** - drag a deal into a Closed Won stage; refresh the page: it stayed, with a close date set. Try deleting a stage that still holds deals: the server refuses.
+6. **Activities** - log a "Workspace tour" with a due datetime, complete it, filter by Overdue/Upcoming/Completed. Note that email activities are labelled "Email logged".
+7. **Reports** - KPIs are real numbers; export the CSV; notice closed deals are excluded from open pipeline value and lost value is never shown as revenue.
+8. **Settings** - flip dark mode (survives a page reload), switch currency INR/USD (only the symbol changes), and demonstrate Reset All Data: wrong password is rejected with data intact, and the correct password is documented as a demo convenience, not real security.

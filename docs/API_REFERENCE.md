@@ -1,4 +1,4 @@
-# API Reference — Nexus CRM
+# API Reference — NRG CO-WORKING CRM
 
 Base URL: `http://localhost:5000/api`
 

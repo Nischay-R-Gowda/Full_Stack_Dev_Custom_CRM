@@ -1,4 +1,4 @@
-# JavaScript Guide — Nexus CRM
+# JavaScript Guide — NRG CO-WORKING CRM
 
 ## ES6+ Features Used
 
