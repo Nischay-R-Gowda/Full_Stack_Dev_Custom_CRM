@@ -161,6 +161,9 @@ export default function Activities() {
         <Button onClick={openCreate}><Plus className="w-4 h-4" />Add Activity</Button>
       </div>
 
+      <div role="note" className="border-l-4 border-amber-400 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
+        <strong>Demo note:</strong> This page shows the follow-up flow. A few activity controls are still on a coffee break and may not work as expected.
+      </div>
       {/* View tabs */}
       <div className="flex items-center gap-1 bg-surface-100 dark:bg-surface-800 rounded-lg p-1 w-fit">
         {tabs.map(t => (
