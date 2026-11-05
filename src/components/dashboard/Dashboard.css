@@ -60,16 +60,18 @@
 .source-track,.seat-track { height:5px; overflow:hidden; background:#eeecf2; }
 .source-track span,.seat-track span { display:block; height:100%; }
 .dashboard-lower-grid { grid-template-columns:1fr 1fr; }
-.dashboard-status-table-wrap { width:100%; overflow-x:auto; }
-.dashboard-status-table { width:100%; border-collapse:collapse; font-size:10px; }
-.dashboard-status-table th { padding:9px 8px; border-bottom:1px solid #e9e6ed; color:#858997; font-size:8px; font-weight:700; letter-spacing:.1em; text-align:right; text-transform:uppercase; }
-.dashboard-status-table th:first-child { text-align:left; }
-.dashboard-status-table td { padding:12px 8px; border-bottom:1px solid #f0eef2; color:#596276; text-align:right; white-space:nowrap; }
-.dashboard-status-table tbody tr:last-child td { border-bottom:0; }
-.dashboard-status-table tbody td:last-child,.dashboard-status-table tfoot td { color:#303950; font-weight:650; }
-.dashboard-status-table tfoot th,.dashboard-status-table tfoot td { padding:11px 8px 2px; border-top:1px solid #e9e6ed; border-bottom:0; color:#303950; font-weight:700; }
-.dashboard-status-table tfoot th { text-align:left; }
-.status-swatch { display:inline-block; width:8px; height:8px; flex:0 0 8px; border-radius:50%; vertical-align:middle; }.sold-swatch { background:#5379c7; }.lost-swatch { background:#d36d55; }.dashboard-outcome-label { display:flex; align-items:center; gap:9px; text-align:left; }.dashboard-outcome-label small { display:block; margin-top:3px; color:#858997; font-size:8px; font-weight:400; }.dashboard-outcome-note { margin:12px 8px 0; color:#858997; font-size:8px; line-height:1.5; }
+.dashboard-deals-table-wrap { width:100%; overflow-x:auto; }
+.dashboard-deals-table { width:100%; border-collapse:collapse; font-size:9px; }
+.dashboard-deals-table th { padding:9px 7px; border-bottom:1px solid #e9e6ed; color:#858997; font-size:8px; font-weight:700; letter-spacing:.09em; text-align:left; text-transform:uppercase; white-space:nowrap; }
+.dashboard-deals-table th:last-child,.dashboard-deals-table td:last-child { text-align:right; }
+.dashboard-deals-table td { padding:11px 7px; border-bottom:1px solid #f0eef2; color:#596276; text-align:left; vertical-align:top; }
+.dashboard-deals-table tbody tr:last-child td { border-bottom:0; }
+.dashboard-deal-link { color:#303950; font-size:9px; font-weight:650; text-decoration:none; }
+.dashboard-deal-link:hover { color:#624cc8; }
+.dashboard-deal-meta { display:block; margin-top:4px; color:#858997; font-size:8px; white-space:nowrap; }
+.dashboard-deal-status { color:#5379c7; font-size:8px; font-weight:650; white-space:nowrap; }
+.dashboard-deal-status.deal-won { color:#3d8278; }
+.dashboard-deal-status.deal-lost { color:#c45f4d; }
 .seat-list { display:flex; flex-direction:column; gap:15px; padding:6px 0; }
 .status-row { display:grid; grid-template-columns:118px 1fr 25px; align-items:center; gap:11px; }
 .status-row > div:first-child { display:flex; align-items:center; gap:8px; color:#687184; font-size:10px; }

@@ -2,7 +2,7 @@ import { ArrowRight, ArrowUpRight, MapPin, Users, UserPlus, GitBranch, Handshake
 import { Link } from 'react-router-dom'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { api } from '../../services/api'
-import { formatCurrency, formatRelativeTime, getSetting, LEAD_SOURCES } from '../../utils/constants'
+import { formatCurrency, formatDateTime, formatRelativeTime, getSetting, LEAD_SOURCES } from '../../utils/constants'
 import useResource from '../../hooks/useResource'
 import './Dashboard.css'
 
@@ -17,8 +17,7 @@ export default function Dashboard() {
   if (!data) return null
 
   const sourceChart = data.leadsBySource || []
-  const seatsSold = data.seatsSold || 0
-  const seatsLost = data.seatsLost || 0
+  const recentDeals = data.recentDeals || []
   const seatChart = data.seatDemandByLocality || []
   const sourceTotal = sourceChart.reduce((sum, source) => sum + source.value, 0)
   const name = getSetting('displayName', 'there')
@@ -93,18 +92,20 @@ export default function Dashboard() {
 
       <section className="dashboard-lower-grid">
         <article className="dashboard-panel status-panel">
-          <PanelHeading eyebrow="CLOSED DEALS" title="Seat outcomes" />
-          {seatsSold + seatsLost > 0 ? <div className="dashboard-status-table-wrap">
-            <table className="dashboard-status-table" aria-label="Seats sold and lost from closed deals">
-              <thead><tr><th>Outcome</th><th>Seats</th></tr></thead>
-              <tbody>
-                <tr><td><span className="dashboard-outcome-label"><i className="status-swatch sold-swatch" /> <span>Seats sold<small>Closed won</small></span></span></td><td>{seatsSold}</td></tr>
-                <tr><td><span className="dashboard-outcome-label"><i className="status-swatch lost-swatch" /> <span>Seats lost<small>Closed lost</small></span></span></td><td>{seatsLost}</td></tr>
-              </tbody>
-              <tfoot><tr><th>Total closed seats</th><td>{seatsSold + seatsLost}</td></tr></tfoot>
+          <PanelHeading eyebrow="RECENT ACTIVITY" title="Recent deals" />
+          {recentDeals.length ? <div className="dashboard-deals-table-wrap">
+            <table className="dashboard-deals-table" aria-label="Recent deals">
+              <thead><tr><th>Deal</th><th>Contact</th><th>Stage</th><th>Amount</th></tr></thead>
+              <tbody>{recentDeals.map(deal => (
+                <tr key={deal.id}>
+                  <td><Link className="dashboard-deal-link" to="/app/deals">{deal.dealName}</Link><small className="dashboard-deal-meta">{formatDateTime(deal.createdAt)}</small></td>
+                  <td>{deal.contact ? deal.contact.firstName + ' ' + deal.contact.lastName : '—'}<small className="dashboard-deal-meta">{deal.contact?.company || '—'}</small></td>
+                  <td><span className={'dashboard-deal-status deal-' + deal.status}>{deal.stage?.name || pretty(deal.status)}</span></td>
+                  <td>{formatCurrency(deal.amount || 0)}</td>
+                </tr>
+              ))}</tbody>
             </table>
-            <p className="dashboard-outcome-note">Based on saved seat requirements for leads linked to closed deals.</p>
-          </div> : <EmptyState>No closed deals with seat requirements yet.</EmptyState>}
+          </div> : <EmptyState>No deals yet. Create a deal to see it here.</EmptyState>}
         </article>
 
         <article className="dashboard-panel locality-panel">

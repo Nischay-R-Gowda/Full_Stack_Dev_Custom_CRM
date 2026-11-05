@@ -12,7 +12,7 @@ const navItems = [
   { path: '/app/leads', icon: UserPlus, label: 'Leads' },
   { path: '/app/deals', icon: Kanban, label: 'Deals & Pipeline' },
   { path: '/app/pipelines', icon: GitBranch, label: 'Pipelines' },
-  { path: '/app/workflows', icon: Workflow, label: 'Workflows' },
+  { path: '/app/workflows', icon: Workflow, label: 'Workflow and automation' },
   { path: '/app/sources', icon: Phone, label: 'Lead Sources' },
   { path: '/app/activities', icon: MessageSquare, label: 'Activities' },
   { path: '/app/reports', icon: BarChart3, label: 'Reports' },

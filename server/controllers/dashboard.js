@@ -22,8 +22,7 @@ export async function getDashboardData() {
     openPipelineValue,
     closedWonRevenue,
     closedLostValue,
-    seatsSold,
-    seatsLost,
+    recentDeals,
     leadsBySource,
     leadsByStatus,
     dealsByStageRaw,
@@ -41,8 +40,7 @@ export async function getDashboardData() {
     prisma.deal.aggregate({ where: { status: 'open' }, _sum: { amount: true } }),
     prisma.deal.aggregate({ where: { status: 'won' }, _sum: { amount: true } }),
     prisma.deal.aggregate({ where: { status: 'lost' }, _sum: { amount: true } }),
-    prisma.lead.aggregate({ where: { deals: { some: { status: 'won' } } }, _sum: { seatsRequired: true } }),
-    prisma.lead.aggregate({ where: { deals: { some: { status: 'lost' } } }, _sum: { seatsRequired: true } }),
+    prisma.deal.findMany({ orderBy: { createdAt: 'desc' }, take: 5, include: { contact: true, stage: true } }),
     prisma.lead.groupBy({ by: ['source'], _count: { _all: true } }),
     prisma.lead.groupBy({ by: ['status'], _count: { _all: true } }),
     prisma.deal.groupBy({ by: ['stageId'], where: { status: 'open' }, _sum: { amount: true }, _count: { _all: true } }),
@@ -75,14 +73,12 @@ export async function getDashboardData() {
     openPipelineValue: openPipelineValue._sum.amount || 0,
     closedWonRevenue: closedWonRevenue._sum.amount || 0,
     closedLostValue: closedLostValue._sum.amount || 0,
-    seatsSold: seatsSold._sum.seatsRequired || 0,
-    seatsLost: seatsLost._sum.seatsRequired || 0,
     // Chart data — plain { name, value } shapes Recharts can bind to directly.
     leadsBySource: leadsBySource.map(r => ({ name: r.source, value: r._count._all })),
     leadsByStatus: leadsByStatus.map(r => ({ name: r.status, value: r._count._all })),
     dealsByStage,
     seatDemandByLocality,
-    recentLeads, recentActivities, leadsOverTime, conversionRate,
+    recentLeads, recentDeals, recentActivities, leadsOverTime, conversionRate,
   }
 }
 
