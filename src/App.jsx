@@ -1,4 +1,5 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { getSetting } from './utils/constants'
 import AppShell from './components/layout/AppShell'
 import Landing from './components/landing/Landing'
 import Dashboard from './components/dashboard/Dashboard'
@@ -13,6 +14,13 @@ import Settings from './components/settings/Settings'
 import Workflows from './components/workflows/Workflows'
 import NotFound from './components/common/NotFound'
 
+function AppHomeRedirect() {
+  const pages = ['dashboard', 'leads', 'contacts', 'deals']
+  const preferredPage = getSetting('defaultPage', 'dashboard')
+  const page = pages.includes(preferredPage) ? preferredPage : 'dashboard'
+  return <Navigate to={'/app/' + page} replace />
+}
+
 export default function App() {
   return (
     <Routes>
@@ -20,9 +28,8 @@ export default function App() {
       <Route path="/" element={<Landing />} />
 
       {/* CRM workspace — all internal pages live under /app. */}
-      <Route path="/app" element={<AppShell breadcrumbs={['Dashboard']}>
-        <Dashboard />
-      </AppShell>} />
+      <Route path="/app" element={<AppHomeRedirect />} />
+      <Route path="/app/dashboard" element={<AppShell breadcrumbs={['Dashboard']}><Dashboard /></AppShell>} />
       <Route path="/app/contacts" element={<AppShell breadcrumbs={['Contacts']}><Contacts /></AppShell>} />
       <Route path="/app/leads" element={<AppShell breadcrumbs={['Leads']}><Leads /></AppShell>} />
       <Route path="/app/deals" element={<AppShell breadcrumbs={['Deals & Pipeline']}><Deals /></AppShell>} />

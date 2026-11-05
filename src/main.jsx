@@ -10,6 +10,7 @@ import './index.css'
 ;(function initTheme() {
   const theme = localStorage.getItem('nrg.theme') || 'light'
   document.documentElement.classList.toggle('dark', theme === 'dark')
+  document.documentElement.classList.toggle('compact-tables', localStorage.getItem('nrg.compactTables') === 'true')
 })()
 
 createRoot(document.getElementById('root')).render(

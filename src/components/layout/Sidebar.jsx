@@ -7,7 +7,7 @@ import {
 
 // All CRM routes are nested under /app; the public landing page lives at /.
 const navItems = [
-  { path: '/app', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/app/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/app/contacts', icon: Users, label: 'Contacts' },
   { path: '/app/leads', icon: UserPlus, label: 'Leads' },
   { path: '/app/deals', icon: Kanban, label: 'Deals & Pipeline' },

@@ -82,3 +82,7 @@ html.dark body, html.dark #root { color: #e5e2e9; }
 html.dark .bg-white { background-color: #23232f; }
 html.dark .border-surface-200 { border-color: #393846; }
 html.dark .border-surface-300 { border-color: #51505d; }
+
+
+html.compact-tables table th,
+html.compact-tables table td { padding-top: .5rem !important; padding-bottom: .5rem !important; }

@@ -17,7 +17,8 @@ export default function Dashboard() {
   if (!data) return null
 
   const sourceChart = data.leadsBySource || []
-  const statusChart = data.leadsByStatus || []
+  const seatsSold = data.seatsSold || 0
+  const seatsLost = data.seatsLost || 0
   const seatChart = data.seatDemandByLocality || []
   const sourceTotal = sourceChart.reduce((sum, source) => sum + source.value, 0)
   const name = getSetting('displayName', 'there')
@@ -92,11 +93,18 @@ export default function Dashboard() {
 
       <section className="dashboard-lower-grid">
         <article className="dashboard-panel status-panel">
-          <PanelHeading eyebrow="SALES FUNNEL" title="Lead status" />
-          {statusChart.length ? <div className="status-list">{statusChart.map((item, index) => {
-            const max = Math.max(...statusChart.map(status => status.value), 1)
-            return <div className="status-row" key={item.name}><div><i style={{ background: STATUS_COLORS[index % STATUS_COLORS.length] }} />{pretty(item.name)}</div><div className="status-bar"><span style={{ width: `${item.value / max * 100}%`, background: STATUS_COLORS[index % STATUS_COLORS.length] }} /></div><b>{item.value}</b></div>
-          })}</div> : <EmptyState>No lead status data yet.</EmptyState>}
+          <PanelHeading eyebrow="CLOSED DEALS" title="Seat outcomes" />
+          {seatsSold + seatsLost > 0 ? <div className="dashboard-status-table-wrap">
+            <table className="dashboard-status-table" aria-label="Seats sold and lost from closed deals">
+              <thead><tr><th>Outcome</th><th>Seats</th></tr></thead>
+              <tbody>
+                <tr><td><span className="dashboard-outcome-label"><i className="status-swatch sold-swatch" /> <span>Seats sold<small>Closed won</small></span></span></td><td>{seatsSold}</td></tr>
+                <tr><td><span className="dashboard-outcome-label"><i className="status-swatch lost-swatch" /> <span>Seats lost<small>Closed lost</small></span></span></td><td>{seatsLost}</td></tr>
+              </tbody>
+              <tfoot><tr><th>Total closed seats</th><td>{seatsSold + seatsLost}</td></tr></tfoot>
+            </table>
+            <p className="dashboard-outcome-note">Based on saved seat requirements for leads linked to closed deals.</p>
+          </div> : <EmptyState>No closed deals with seat requirements yet.</EmptyState>}
         </article>
 
         <article className="dashboard-panel locality-panel">

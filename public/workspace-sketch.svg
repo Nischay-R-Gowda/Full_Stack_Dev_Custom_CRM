@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 820" fill="none">
+  <rect width="1200" height="820" fill="#F3EDE3"/>
+  <path d="M26 36C308 24 901 30 1170 38L1162 788C847 797 329 795 32 784Z" stroke="#2C3850" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M34 43C372 37 851 37 1164 45" stroke="#2C3850" stroke-width="1.5" opacity=".42"/>
+
+  <!-- morning light and a hand-drawn Bengaluru skyline -->
+  <path d="M72 76L72 419M69 79C204 72 410 73 566 80L559 420" stroke="#2C3850" stroke-width="4" stroke-linecap="round"/>
+  <path d="M78 84L557 86L554 412L76 415Z" fill="#DDE9E7" stroke="#2C3850" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M80 275L140 240L192 264L251 214L308 263L357 230L407 263L465 223L553 275V411L78 414Z" fill="#E8E0D5"/>
+  <path d="M87 333L132 333L131 286L171 286L173 334L216 334L216 250L268 250L270 335L305 335L306 299L347 299L350 337L393 337L393 268L443 268L445 337L481 337L482 302L524 302L526 410L85 412Z" fill="#C9D4CE" stroke="#61776E" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M229 250L228 278M244 250L245 278M405 269L405 297M420 270L420 298M494 304L494 325" stroke="#F3EDE3" stroke-width="4"/>
+  <path d="M294 83L291 411M450 84L449 412M78 240L557 236M78 328L556 325" stroke="#2C3850" stroke-width="4" stroke-linecap="round"/>
+  <path d="M287 89L284 408M446 88L444 407" stroke="#2C3850" stroke-width="1.5" opacity=".45"/>
+
+  <!-- small warm sun and loose pencil marks -->
+  <circle cx="500" cy="147" r="31" fill="#E5B96C" opacity=".72"/>
+  <path d="M492 147C497 140 505 140 510 147M485 161L516 160M114 112L153 111M106 124L135 123M371 123L396 123" stroke="#C98761" stroke-width="2.5" stroke-linecap="round" opacity=".8"/>
+
+  <!-- shared work table -->
+  <path d="M107 482C343 467 765 472 1092 490L1081 548C793 564 359 557 117 543Z" fill="#D7B995" stroke="#2C3850" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M122 492C364 482 794 485 1077 498" stroke="#FFF8EE" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+  <path d="M190 548L178 737M1010 550L1026 734" stroke="#2C3850" stroke-width="7" stroke-linecap="round"/>
+  <path d="M182 735L250 736M1018 734L1090 735" stroke="#2C3850" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- laptop -->
+  <path d="M417 388L616 386L624 482L411 482Z" fill="#E7E3F6" stroke="#2C3850" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M430 401L603 399L609 465L425 466Z" fill="#C9C4E7" stroke="#6252B9" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M410 482C466 476 573 476 625 482L644 495C582 506 451 505 390 495Z" fill="#EDE7DE" stroke="#2C3850" stroke-width="3.5" stroke-linejoin="round"/>
+  <path d="M493 488L555 488" stroke="#6252B9" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- notebook and coffee -->
+  <path d="M719 467L833 470L828 490L715 487Z" fill="#F4D6C7" stroke="#2C3850" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M730 472L817 474M727 478L814 480" stroke="#C98761" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M872 444C882 441 909 441 919 445L915 478C904 484 886 482 876 478Z" fill="#F8F4EB" stroke="#2C3850" stroke-width="3"/>
+  <path d="M917 451C931 447 933 465 916 467" stroke="#2C3850" stroke-width="3" stroke-linecap="round"/>
+  <path d="M884 436C876 425 888 421 882 412M898 435C891 424 904 420 899 410" stroke="#C98761" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- chairs and an inviting plant -->
+  <path d="M264 497L271 444C275 424 298 416 320 421L344 430L340 492" fill="#B9C9C7" stroke="#2C3850" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M275 491L276 555M332 492L334 554M272 551L338 552" stroke="#2C3850" stroke-width="4" stroke-linecap="round"/>
+  <path d="M1014 486C1017 451 1035 429 1055 424C1061 449 1049 475 1019 489M1021 482C1040 452 1067 445 1084 454C1076 477 1051 492 1021 488M1018 478C1007 450 990 441 973 446C978 469 995 484 1018 485" stroke="#567A68" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M1008 488L1064 488L1053 542C1041 549 1022 548 1013 541Z" fill="#D57A62" stroke="#2C3850" stroke-width="3"/>
+  <path d="M1014 500L1059 500M1018 511L1057 511" stroke="#F3C9B5" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- a couple of human touches: pinned notes and loose chair marks -->
+  <path d="M124 447L177 445L178 469L125 470Z" fill="#F7D995" stroke="#2C3850" stroke-width="2"/>
+  <path d="M137 455L165 454M138 462L158 462" stroke="#927024" stroke-width="2" stroke-linecap="round"/>
+  <path d="M644 444C659 434 674 436 684 447M649 450L677 449" stroke="#6252B9" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M83 766C247 759 404 773 551 766M570 770C762 761 942 771 1115 764" stroke="#C98761" stroke-width="2" stroke-linecap="round" opacity=".75"/>
+</svg>

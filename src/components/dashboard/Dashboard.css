@@ -54,13 +54,23 @@
 .dashboard-bar-list { display:flex; flex-direction:column; gap:17px; padding-top:5px; }
 .source-row-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
 .source-row-top > span { display:flex; align-items:center; gap:8px; color:#657084; font-size:10px; }
-.source-row-top i,.status-row i { width:7px; height:7px; border-radius:50%; }
+.source-row-top i { width:7px; height:7px; border-radius:50%; }
 .source-row-top strong { color:#414b60; font-size:10px; }
 .source-row-top small { margin-left:10px; color:#9398a2; font-size:9px; font-weight:400; }
-.source-track,.status-bar,.seat-track { height:5px; overflow:hidden; background:#eeecf2; }
-.source-track span,.status-bar span,.seat-track span { display:block; height:100%; }
+.source-track,.seat-track { height:5px; overflow:hidden; background:#eeecf2; }
+.source-track span,.seat-track span { display:block; height:100%; }
 .dashboard-lower-grid { grid-template-columns:1fr 1fr; }
-.status-list,.seat-list { display:flex; flex-direction:column; gap:15px; padding:6px 0; }
+.dashboard-status-table-wrap { width:100%; overflow-x:auto; }
+.dashboard-status-table { width:100%; border-collapse:collapse; font-size:10px; }
+.dashboard-status-table th { padding:9px 8px; border-bottom:1px solid #e9e6ed; color:#858997; font-size:8px; font-weight:700; letter-spacing:.1em; text-align:right; text-transform:uppercase; }
+.dashboard-status-table th:first-child { text-align:left; }
+.dashboard-status-table td { padding:12px 8px; border-bottom:1px solid #f0eef2; color:#596276; text-align:right; white-space:nowrap; }
+.dashboard-status-table tbody tr:last-child td { border-bottom:0; }
+.dashboard-status-table tbody td:last-child,.dashboard-status-table tfoot td { color:#303950; font-weight:650; }
+.dashboard-status-table tfoot th,.dashboard-status-table tfoot td { padding:11px 8px 2px; border-top:1px solid #e9e6ed; border-bottom:0; color:#303950; font-weight:700; }
+.dashboard-status-table tfoot th { text-align:left; }
+.status-swatch { display:inline-block; width:8px; height:8px; flex:0 0 8px; border-radius:50%; vertical-align:middle; }.sold-swatch { background:#5379c7; }.lost-swatch { background:#d36d55; }.dashboard-outcome-label { display:flex; align-items:center; gap:9px; text-align:left; }.dashboard-outcome-label small { display:block; margin-top:3px; color:#858997; font-size:8px; font-weight:400; }.dashboard-outcome-note { margin:12px 8px 0; color:#858997; font-size:8px; line-height:1.5; }
+.seat-list { display:flex; flex-direction:column; gap:15px; padding:6px 0; }
 .status-row { display:grid; grid-template-columns:118px 1fr 25px; align-items:center; gap:11px; }
 .status-row > div:first-child { display:flex; align-items:center; gap:8px; color:#687184; font-size:10px; }
 .status-row > b { color:#39435a; font-size:10px; text-align:right; }
@@ -94,5 +104,5 @@
 .dashboard-empty { margin:0; padding:26px 0; color:#858b98; font-size:10px; text-align:center; }
 @keyframes dash-shimmer { to { background-position-x:-200%; } }
 @media(max-width:1050px) { .dashboard-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }.dashboard-main-grid { grid-template-columns:1fr 1fr; }.dashboard-quick-stats { flex-wrap:wrap; justify-content:flex-start; } }
-@media(max-width:700px) { .dashboard-welcome { align-items:flex-start; flex-direction:column; }.dashboard-metrics { gap:8px; }.dashboard-metric { min-height:112px; padding:14px; }.dashboard-main-grid,.dashboard-lower-grid,.dashboard-recent-grid { grid-template-columns:1fr; gap:10px; margin-top:10px; }.dashboard-panel { padding:15px; }.dashboard-quick-stats { gap:12px 19px; }.status-row { grid-template-columns:110px 1fr 24px; }.seat-row { grid-template-columns:18px minmax(82px,1fr) 1fr 48px; gap:7px; }.source-chart-layout { grid-template-columns:minmax(120px,.9fr) 1.1fr; } }
+@media(max-width:700px) { .dashboard-welcome { align-items:flex-start; flex-direction:column; }.dashboard-metrics { gap:8px; }.dashboard-metric { min-height:112px; padding:14px; }.dashboard-main-grid,.dashboard-lower-grid,.dashboard-recent-grid { grid-template-columns:1fr; gap:10px; margin-top:10px; }.dashboard-panel { padding:15px; }.dashboard-quick-stats { gap:12px 19px; }.seat-row { grid-template-columns:18px minmax(82px,1fr) 1fr 48px; gap:7px; }.source-chart-layout { grid-template-columns:minmax(120px,.9fr) 1.1fr; } }
 @media(prefers-reduced-motion:reduce) { .dashboard-loading div { animation:none; } }

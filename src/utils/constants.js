@@ -66,7 +66,7 @@ export const DURATIONS = ['1 day', '1 week', '1 month', '3 months', '6 months', 
 // WITHOUT rewriting any stored numeric or timestamp. The localStorage keys
 // are also read by index.css / AppShell on load to set the initial theme.
 
-const SETTINGS_KEYS = { theme: 'nrg.theme', displayName: 'nrg.displayName', currency: 'nrg.currency', dateFormat: 'nrg.dateFormat' }
+const SETTINGS_KEYS = { theme: 'nrg.theme', displayName: 'nrg.displayName', currency: 'nrg.currency', dateFormat: 'nrg.dateFormat', defaultPage: 'nrg.defaultPage', compactTables: 'nrg.compactTables' }
 
 export function getSetting(key, fallback) {
   try { return localStorage.getItem(SETTINGS_KEYS[key]) ?? fallback } catch { return fallback }

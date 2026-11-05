@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import {
   Moon, Sun, User, IndianRupee, Calendar, RefreshCw, Info,
-  Check, Shield, X
+  Check, Shield, X, Home, Rows3, Download
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { api } from '../../services/api'
@@ -18,12 +18,21 @@ import { cn } from '../../utils/constants'
 // guarded by a case-sensitive password (Nischay).
 
 const APP_VERSION = '1.0.0'
+const START_PAGES = [
+  { value: 'dashboard', label: 'Dashboard' },
+  { value: 'leads', label: 'Leads' },
+  { value: 'contacts', label: 'Contacts' },
+  { value: 'deals', label: 'Deals & Pipeline' },
+]
 
 export default function Settings() {
   const [theme, setTheme] = useState(() => getSetting('theme', 'light'))
   const [displayName, setDisplayName] = useState(() => getSetting('displayName', 'Admin'))
   const [currency, setCurrency] = useState(() => getSetting('currency', 'INR'))
   const [dateFormat, setDateFormat] = useState(() => getSetting('dateFormat', 'DD Mon YYYY'))
+  const [defaultPage, setDefaultPage] = useState(() => getSetting('defaultPage', 'dashboard'))
+  const [compactTables, setCompactTables] = useState(() => getSetting('compactTables', 'false') === 'true')
+  const [backupBusy, setBackupBusy] = useState(false)
 
   const [resetOpen, setResetOpen] = useState(false)
   const [resetPassword, setResetPassword] = useState('')
@@ -56,6 +65,51 @@ export default function Settings() {
     toast.success(`Date format set to ${v}`)
   }
 
+  const saveDefaultPage = (page) => {
+    setDefaultPage(page)
+    setSetting('defaultPage', page)
+    toast.success('Default CRM page saved')
+  }
+
+  const toggleCompactTables = () => {
+    const next = !compactTables
+    setCompactTables(next)
+    setSetting('compactTables', next ? 'true' : 'false')
+    document.documentElement.classList.toggle('compact-tables', next)
+    toast.success(next ? 'Compact table rows enabled' : 'Standard table rows enabled')
+  }
+
+  const downloadBackup = async () => {
+    setBackupBusy(true)
+    try {
+      const [contacts, leads, deals, activities, pipelines] = await Promise.all([
+        api.getContacts({}),
+        api.getLeads({}),
+        api.getDeals({}),
+        api.getActivities({}),
+        api.getPipelines(),
+      ])
+      const backup = {
+        application: 'NRG CO-WORKING CRM',
+        exportedAt: new Date().toISOString(),
+        records: { contacts, leads, deals, activities, pipelines },
+      }
+      const file = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
+      const downloadUrl = window.URL.createObjectURL(file)
+      const anchor = document.createElement('a')
+      anchor.href = downloadUrl
+      anchor.download = 'nrg-crm-backup-' + new Date().toISOString().slice(0, 10) + '.json'
+      document.body.appendChild(anchor)
+      anchor.click()
+      anchor.remove()
+      window.setTimeout(() => window.URL.revokeObjectURL(downloadUrl), 1000)
+      toast.success('Workspace backup downloaded')
+    } catch (err) {
+      toast.error('Could not download backup: ' + err.message)
+    } finally {
+      setBackupBusy(false)
+    }
+  }
   const handleReset = async () => {
     setResetting(true)
     setResetError('')
@@ -162,6 +216,60 @@ export default function Settings() {
         </div>
       </section>
 
+      <section className="bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-700 rounded-xl p-5">
+        <h2 className="text-sm font-semibold text-surface-700 dark:text-surface-300 mb-3">Workspace preferences</h2>
+        <div className={row}>
+          <div className="flex items-center gap-3">
+            <div className={iconWrap}><Home className="w-4 h-4 text-surface-600 dark:text-surface-300" /></div>
+            <div>
+              <p className="text-sm font-medium text-surface-800 dark:text-surface-100">Default CRM page</p>
+              <p className="text-xs text-surface-400">Open this page when you enter the CRM</p>
+            </div>
+          </div>
+          <select
+            value={defaultPage}
+            onChange={e => saveDefaultPage(e.target.value)}
+            className="px-3 py-1.5 bg-white dark:bg-surface-800 border border-surface-300 dark:border-surface-700 rounded-lg text-sm text-surface-800 dark:text-surface-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            {START_PAGES.map(page => <option key={page.value} value={page.value}>{page.label}</option>)}
+          </select>
+        </div>
+        <div className={row}>
+          <div className="flex items-center gap-3">
+            <div className={iconWrap}><Rows3 className="w-4 h-4 text-surface-600 dark:text-surface-300" /></div>
+            <div>
+              <p className="text-sm font-medium text-surface-800 dark:text-surface-100">Compact table rows</p>
+              <p className="text-xs text-surface-400">Show more records on screen at once</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={compactTables}
+            aria-label="Compact table rows"
+            onClick={toggleCompactTables}
+            className={cn('w-12 h-6 rounded-full relative transition-colors flex-shrink-0', compactTables ? 'bg-primary-600' : 'bg-surface-300')}
+          >
+            <span className={cn('w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all', compactTables ? 'left-6' : 'left-0.5')} />
+          </button>
+        </div>
+      </section>
+
+      <section className="bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-700 rounded-xl p-5">
+        <h2 className="text-sm font-semibold text-surface-700 dark:text-surface-300 mb-3">Data backup</h2>
+        <div className={row}>
+          <div className="flex items-center gap-3">
+            <div className={iconWrap}><Download className="w-4 h-4 text-surface-600 dark:text-surface-300" /></div>
+            <div>
+              <p className="text-sm font-medium text-surface-800 dark:text-surface-100">Download workspace backup</p>
+              <p className="text-xs text-surface-400">Save contacts, leads, deals, activities and pipelines as a JSON file</p>
+            </div>
+          </div>
+          <Button variant="secondary" disabled={backupBusy} onClick={downloadBackup}>
+            <Download className="w-4 h-4" />{backupBusy ? 'Preparing...' : 'Download'}
+          </Button>
+        </div>
+      </section>
       <section className="bg-white dark:bg-surface-900 border border-red-200 dark:border-red-900/50 rounded-xl p-5">
         <h2 className="text-sm font-semibold text-red-700 dark:text-red-400 mb-3 flex items-center gap-2"><RefreshCw className="w-4 h-4" />Danger Zone</h2>
         <div className={row}>

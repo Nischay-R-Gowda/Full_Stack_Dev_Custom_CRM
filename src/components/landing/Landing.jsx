@@ -36,10 +36,10 @@ export default function Landing() {
           </div>
           <p className="crm-hero-caption"><Check size={14} /> Company details, workspace needs and next steps stay together.</p>
         </div>
-        <div className="crm-workspace-photo" id="workflow">
-          <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1400&q=85" alt="Sunlit shared workspace with communal tables and indoor plants" />
-          <span className="photo-location"><MapPin size={13} /> BENGALURU · MADE FOR GOOD WORK</span>
-          <div className="photo-note"><span className="photo-note-kicker">ENQUIRY WORKFLOW</span><strong>See the next step for each workspace request.</strong><span className="photo-note-flow">Lead <i>→</i> Tour <i>→</i> Follow-up <i>→</i> Deal</span></div>
+        <div className="crm-workspace-illustration" id="workflow">
+          <img src="/workspace-sketch.svg" alt="Hand-drawn illustration of a Bengaluru coworking room with shared desks, a laptop, a bright window and plants" />
+          <span className="sketch-location"><MapPin size={13} /> BENGALURU · WORKSPACE CRM</span>
+          <div className="sketch-note"><span className="sketch-note-kicker">ENQUIRY WORKFLOW</span><strong>See the next step for each workspace request.</strong><span className="sketch-note-flow">Lead <i>→</i> Tour <i>→</i> Follow-up <i>→</i> Deal</span></div>
         </div>
       </section>
 

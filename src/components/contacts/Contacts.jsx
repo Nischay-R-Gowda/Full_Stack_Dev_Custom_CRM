@@ -119,14 +119,13 @@ export default function Contacts() {
                 <SortHeader column="firstName" sortBy={sortBy} sortOrder={sortOrder} onSort={toggleSort} className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Contact</SortHeader>
                 <SortHeader column="company" sortBy={sortBy} sortOrder={sortOrder} onSort={toggleSort} className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Company</SortHeader>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Source</th>
-                <SortHeader column="lifecycleStage" sortBy={sortBy} sortOrder={sortOrder} onSort={toggleSort} className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Stage</SortHeader>
                 <SortHeader column="createdAt" sortBy={sortBy} sortOrder={sortOrder} onSort={toggleSort} className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Created</SortHeader>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-100">
-              {loading ? Array(4).fill(0).map((_, i) => <tr key={i}><td colSpan={6} className="px-4 py-4"><div className="animate-pulse h-4 bg-surface-100 rounded w-full" /></td></tr>) :
-                contacts.length === 0 ? <tr><td colSpan={6} className="px-4 py-12 text-center text-surface-400">No contacts found. Add one to get started.</td></tr> :
+              {loading ? Array(4).fill(0).map((_, i) => <tr key={i}><td colSpan={5} className="px-4 py-4"><div className="animate-pulse h-4 bg-surface-100 rounded w-full" /></td></tr>) :
+                contacts.length === 0 ? <tr><td colSpan={5} className="px-4 py-12 text-center text-surface-400">No contacts found. Add one to get started.</td></tr> :
                 contacts.map(c => (
                   <tr key={c.id} className="hover:bg-surface-50/50 transition-colors cursor-pointer" onClick={() => setDetailContact(c)}>
                     <td className="px-4 py-3">
@@ -140,7 +139,6 @@ export default function Contacts() {
                     </td>
                     <td className="px-4 py-3 text-sm text-surface-600">{c.company || '—'}</td>
                     <td className="px-4 py-3"><Badge color={c.leadSource === 'google_ads' ? 'blue' : c.leadSource === 'meta_ads' ? 'purple' : c.leadSource === 'website' ? 'green' : c.leadSource === 'inbound_call' ? 'amber' : 'gray'}>{LEAD_SOURCES[c.leadSource]?.label || c.leadSource}</Badge></td>
-                    <td className="px-4 py-3"><Badge color={LIFECYCLE_STAGES[c.lifecycleStage]?.badge || 'gray'}>{LIFECYCLE_STAGES[c.lifecycleStage]?.label || c.lifecycleStage}</Badge></td>
                     <td className="px-4 py-3 text-sm text-surface-500">{formatDateTime(c.createdAt)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>

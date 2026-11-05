@@ -238,7 +238,7 @@ export default function Leads() {
           </div>
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="px-3 py-2 bg-white dark:bg-surface-800 dark:text-surface-100 border border-surface-300 dark:border-surface-700 rounded-lg text-sm"><option value="">All Statuses</option>{Object.entries(LEAD_STATUSES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select>
           <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value)} className="px-3 py-2 bg-white dark:bg-surface-800 dark:text-surface-100 border border-surface-300 dark:border-surface-700 rounded-lg text-sm"><option value="">All Sources</option>{Object.entries(LEAD_SOURCES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select>
-          <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="px-3 py-2 bg-white dark:bg-surface-800 dark:text-surface-100 border border-surface-300 dark:border-surface-700 rounded-lg text-sm"><option value="">All Types</option>{Object.entries(LEAD_TYPES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select>
+          <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="px-3 py-2 bg-white dark:bg-surface-800 dark:text-surface-100 border border-surface-300 dark:border-surface-700 rounded-lg text-sm"><option value="">All Types</option>{Object.entries(LEAD_TYPES).filter(([k]) => k !== 'deal').map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select>
           <select value={localityFilter} onChange={e => setLocalityFilter(e.target.value)} className="px-3 py-2 bg-white dark:bg-surface-800 dark:text-surface-100 border border-surface-300 dark:border-surface-700 rounded-lg text-sm"><option value="">All Locations</option>{localityOptions.map(locality => <option key={locality} value={locality}>{locality}</option>)}</select>
         </div>
         <Button onClick={openCreate}><Plus className="w-4 h-4" />New Lead</Button>
@@ -259,14 +259,15 @@ export default function Leads() {
               <th className="text-right px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider"><SortHeader label="Seats" column="seatsRequired" active={sortBy === 'seatsRequired'} direction={sortDirection} onSort={toggleSort} /></th>
               <th className="text-right px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider"><SortHeader label="Budget" column="expectedValue" active={sortBy === 'expectedValue'} direction={sortDirection} onSort={toggleSort} /></th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider"><SortHeader label="Duration" column="duration" active={sortBy === 'duration'} direction={sortDirection} onSort={toggleSort} /></th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Source</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Type</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Status</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider"><SortHeader label="Created" column="createdAt" active={sortBy === 'createdAt'} direction={sortDirection} onSort={toggleSort} /></th>
               <th className="text-right px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Actions</th>
             </tr></thead>
             <tbody className="divide-y divide-surface-100 dark:divide-surface-700">
-              {loading ? Array(4).fill(0).map((_, i) => <tr key={i}><td colSpan={9} className="px-4 py-4"><div className="animate-pulse h-4 bg-surface-100 rounded w-full" /></td></tr>) :
-                visibleLeads.length === 0 ? <tr><td colSpan={9} className="px-4 py-12 text-center text-surface-400">No leads match these filters.</td></tr> :
+              {loading ? Array(4).fill(0).map((_, i) => <tr key={i}><td colSpan={10} className="px-4 py-4"><div className="animate-pulse h-4 bg-surface-100 rounded w-full" /></td></tr>) :
+                visibleLeads.length === 0 ? <tr><td colSpan={10} className="px-4 py-12 text-center text-surface-400">No leads match these filters.</td></tr> :
                 visibleLeads.map((lead, index) => {
                   const hasRealContact = lead.contact && !isGeneratedLeadContact(lead.contact)
                   const displayName = hasRealContact ? `${lead.contact.firstName} ${lead.contact.lastName}` : lead.company || `Lead ${lead.leadNumber}`
@@ -291,6 +292,7 @@ export default function Leads() {
                     <td className="px-4 py-3 text-right"><InlineLeadField label="seats" value={lead.seatsRequired} displayValue={lead.seatsRequired ?? ''} type="number" align="right" onSave={value => saveInlineField(lead, 'seatsRequired', value)} /></td>
                     <td className="px-4 py-3 text-right"><InlineLeadField label="budget" value={lead.expectedValue} displayValue={lead.expectedValue != null ? formatCurrency(lead.expectedValue) : ''} type="number" align="right" onSave={value => saveInlineField(lead, 'expectedValue', value)} /></td>
                     <td className="px-4 py-3"><InlineLeadField label="duration" value={lead.duration} displayValue={lead.duration} options={DURATIONS} onSave={value => saveInlineField(lead, 'duration', value)} /></td>
+                    <td className="px-4 py-3"><Badge color={lead.source === 'google_ads' ? 'blue' : lead.source === 'meta_ads' ? 'purple' : lead.source === 'website' ? 'green' : lead.source === 'inbound_call' ? 'amber' : 'gray'}>{LEAD_SOURCES[lead.source]?.label || lead.source || '—'}</Badge></td>
                     <td className="px-4 py-3"><Badge color={lead.type === 'mql' ? 'purple' : lead.type === 'sql' ? 'blue' : 'emerald'} dot>{lead.type.toUpperCase()}</Badge></td>
                     <td className="px-4 py-3"><Badge color={LEAD_STATUSES[lead.status]?.color || 'gray'}>{LEAD_STATUSES[lead.status]?.label || lead.status}</Badge></td>
                     <td className="px-4 py-3 text-sm text-surface-500">{formatDateTime(lead.createdAt)}</td>
