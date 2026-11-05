@@ -26,13 +26,11 @@ export default function Sidebar({ collapsed, setCollapsed }) {
     <aside className={`${collapsed ? 'w-16' : 'w-64'} bg-white dark:bg-surface-900 dark:border-surface-700 border-r border-surface-200 flex flex-col transition-all duration-200 h-screen sticky top-0 z-40`}>
       {/* Brand */}
       <div className="flex items-center gap-3 px-4 h-14 border-b border-surface-200 dark:border-surface-700">
-        <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center flex-shrink-0">
-          <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-        </div>
+        <span className="w-9 h-9 bg-[#49664d] rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs" style={{ fontFamily: '"Segoe Print", "Bradley Hand", cursive', transform: 'rotate(-6deg)' }}>nrg</span>
         {!collapsed && (
           <div className="min-w-0">
-            <span className="font-bold text-surface-800 dark:text-surface-100 text-sm tracking-tight block truncate">NRG CO-WORKING</span>
-            <span className="text-[10px] text-surface-400 uppercase tracking-wider">Bengaluru · CRM</span>
+            <span className="text-surface-800 dark:text-surface-100 text-sm block truncate" style={{ fontFamily: '"Segoe Print", "Bradley Hand", cursive', fontWeight: 600, letterSpacing: '-.04em' }}>NRG Co-working</span>
+            <span className="text-[10px] text-surface-400 tracking-wide">Bengaluru · Workspace CRM</span>
           </div>
         )}
       </div>
