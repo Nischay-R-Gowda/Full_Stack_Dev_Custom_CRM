@@ -6,7 +6,7 @@ import { formatDateTime, getInitials, LEAD_SOURCES, LIFECYCLE_STAGES, LOCALITIES
 import useResource from '../../hooks/useResource'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
-import Select from '../ui/Input'
+import Select from '../ui/SearchableSelect'
 import { Badge } from '../ui/Badge'
 import Modal from '../ui/Modal'
 
