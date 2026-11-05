@@ -1,112 +1,89 @@
-# NRG CO-WORKING CRM
+# NRG Co-working CRM
 
-A full-stack Customer Relationship Management web application built for a university semester project and designed to evolve into a production-grade CRM product.
+A full-stack CRM course project for managing coworking enquiries, contacts, follow-ups, and deals for NRG Co-working in Bengaluru.
 
 ## Features
 
-- **Dashboard** — KPI cards, charts (Recharts), lead acquisition trends, revenue overview
-- **Contacts** — Full CRUD, search, filter, lifecycle stages, duplicate email prevention
-- **Leads** — Lead management with MQL/SQL/Deal status, qualification workflow, contact association
-- **Deals & Pipeline** — Kanban-style pipeline view, stage management, deal creation and tracking
-- **Pipelines** — Create/edit pipelines, add/rename/reorder stages, safe deletion
-- **Lead Sources** — Simulated Google Ads, Meta Ads, Website Form, and Inbound Call integrations
-- **Activities** — Call, email, meeting, note, and task tracking with due dates
-- **Reports** — Analytics charts with CSV export, live data from application database
+- **Dashboard** — CRM totals, lead activity over time, lead-source pie chart, recent deals, and seat demand by neighbourhood.
+- **Contacts** — Create, edit, search, and filter contact records; view email, company, source, and creation date.
+- **Leads** — Track MQL and SQL enquiries, record coworking locality, seats, budget, and duration, and sort or filter the lead list.
+- **Deals & Pipeline** — Track deal amounts, stages, expected close dates, and actual close dates when marked Closed Won or Closed Lost.
+- **Pipelines** — Manage pipelines and their stages.
+- **Lead Sources** — Demo buttons simulate enquiries from Google Ads, Meta Ads, a website form, and inbound calls. They do not connect to those services.
+- **Activities & Follow-ups** — A demo page for calls, meetings, tasks, notes, and follow-up dates. Some activity controls may not behave as expected; email entries are logs and do not send email. The page displays a lighthearted demo notice.
+- **Workflow and automation** — Placeholder page reserved for further development.
+- **Settings** — Choose a default CRM page, turn on compact table rows, download a JSON backup, and set theme, display name, currency, and date format.
+- **Reports** — Review CRM summaries and export report data.
 
-## Tech Stack
+## Demo limitations
+
+This is a single-user university project and has no login or authentication. Lead-source actions are simulations. Email activities are not sent. Activity actions may be incomplete. The backup downloads JSON data, but the app does not currently restore from that file. Do not expose this demo server publicly.
+
+## Tech stack
 
 | Layer | Technology |
-|-------|-----------|
-| Frontend | React 19, Vite 8, Tailwind CSS 4, Recharts, Lucide React |
-| Backend | Node.js, Express.js |
-| Database | SQLite, Prisma ORM |
-| State | React Hooks (useState, useEffect) |
-| Routing | React Router DOM 7 |
+| --- | --- |
+| Frontend | React 19, Vite 8, Tailwind CSS 4 |
+| Charts and icons | Recharts, Lucide React |
+| Backend | Node.js, Express |
+| Database | SQLite with Prisma |
+| Routing | React Router DOM |
 
-## Quick Start
+The HTML entry point is the root index.html. React routes and page components are in src.
 
-```bash
-# Install dependencies
-npm install
+## Quick start
 
-# Set up database
-echo "DATABASE_URL=\"file:./server/prisma/dev.db\"" > .env
-npx prisma db push --schema server/prisma/schema.prisma
-node server/prisma/seed.js
+From the project root:
 
-# Start backend (port 5000)
-npm run server
+1. Install dependencies with npm install.
+2. Make sure the root .env file contains this database setting:
 
-# Start frontend (port 5173) — in another terminal
-npm run dev
-```
+   DATABASE_URL="file:./server/prisma/dev.db"
 
-Visit `http://localhost:5173` to use the application.
+3. Create or update the local database with npm run db:push.
+4. Load the sample CRM records with npm run db:seed.
+5. Start the backend and frontend together with npm run dev:all.
+6. Open http://localhost:5173 in your browser.
 
-## Project Structure
+The backend API runs on port 5000 and the Vite development server runs on port 5173.
 
-```
-crm-platform/
-  src/
-    components/
-      common/       — NotFound page
-      dashboard/    — Dashboard with KPI cards and charts
-      contacts/     — Contacts CRUD with search/filter
-      leads/        — Leads management with qualification
-      deals/        — Kanban pipeline and deal CRUD
-      pipelines/    — Pipeline and stage management
-      sources/      — Simulated lead source integrations
-      activities/   — Activity and follow-up tracking
-      reports/      — Analytics and CSV export
-      ui/           — Reusable UI components (Button, Card, Badge, Modal, Input)
-      layout/       — AppShell, Sidebar, Header
-    services/       — API client (api.js)
-    utils/          — Constants and helpers
-    pages/          — (routed via AppShell)
-    App.jsx         — Route configuration
-    main.jsx        — Entry point with Router
-  server/
-    server.js       — Express app entry
-    routes/         — REST API route handlers
-    controllers/    — Business logic and Prisma operations
-    prisma/
-      schema.prisma — Database schema
-      seed.js       — Sample data
-    .env            — DATABASE_URL
-  docs/             — Documentation and learning guides
-```
+## Demo walkthrough
 
-## Demo Walkthrough
+1. Open the CRM dashboard to review the current lead, deal, and source summaries.
+2. Use Lead Sources to simulate an enquiry.
+3. Open Leads to qualify an enquiry and add coworking requirements such as locality, seats, budget, and duration.
+4. Create or review a deal in Deals & Pipeline and move it through the available stages.
+5. Open Activities & Follow-ups to see the demo follow-up layout and its current limitations.
+6. Open Workflow and automation to see the placeholder for planned development.
 
-1. Open the Dashboard → see seeded KPIs and charts
-2. Go to **Lead Sources** → click **Simulate Google Ads Lead** → see success toast
-3. Go to **Leads** → find the new lead with MQL badge
-4. Click the **Qualify** button → select SQL/Deal type, enter contact details
-5. Go to **Deals** → create a deal for the lead → move through pipeline stages
-6. Go to **Dashboard** → see updated metrics and charts
+## Project structure
 
-## Scripts
+- index.html — Vite HTML entry point.
+- public — Static assets, including the NRG mark and workspace illustration.
+- src/App.jsx and src/main.jsx — React application routes and entry point.
+- src/components — Dashboard, contacts, leads, deals, pipelines, workflow, sources, activities, reports, settings, shared UI, and layout components.
+- src/services — Frontend API client.
+- src/utils — Shared constants, formatting, and browser-stored preferences.
+- server/server.js — Express API server.
+- server/routes and server/controllers — API routes and application logic.
+- server/prisma/schema.prisma — Database schema.
+- server/prisma/seed.js — Sample data for the demo.
+- docs — Project documentation and learning materials.
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start Vite dev server |
-| `npm run server` | Start Express backend |
-| `npm run dev:all` | Start both concurrently |
-| `npm run build` | Production build |
-| `npm run db:push` | Push schema to database |
-| `npm run db:seed` | Seed with sample data |
-| `npm run db:studio` | Open Prisma Studio |
-| `npm run lint` | Run ESLint |
+## Useful commands
 
-## Documentation
-
-See `docs/` for:
-- Architecture, database schema, and API reference
-- Frontend and JavaScript learning guides
-- Testing report and known limitations
-- Viva question bank (100+ questions)
-- Complete learning guide with code explanations
+| Command | Purpose |
+| --- | --- |
+| npm run dev | Start the Vite frontend |
+| npm run server | Start the Express backend |
+| npm run dev:all | Start both services together |
+| npm run build | Build the frontend for production |
+| npm run lint | Run ESLint |
+| npm run check:routes | Check frontend API calls against server routes |
+| npm run db:push | Apply the Prisma schema to the SQLite database |
+| npm run db:seed | Load sample data |
+| npm run db:studio | Open Prisma Studio |
 
 ## License
 
-University semester project — NRG CO-WORKING CRM.
+University semester project — NRG Co-working CRM.
