@@ -10,7 +10,16 @@ const pretty = value => value.replace(/_/g, ' ').replace(/\b\w/g, char => char.t
 const STATUS_COLORS = ['#765fdc', '#d36d55', '#c08b2d', '#5379c7', '#be628e', '#3d9a90']
 
 export default function Dashboard() {
-  const { data, loading, error } = useResource(() => api.getDashboard(), [])
+  const { data, loading, error } = useResource(async () => {
+    const dashboard = await api.getDashboard()
+    if (!dashboard || Array.isArray(dashboard.recentDeals)) return dashboard
+    try {
+      const deals = await api.getDeals({})
+      return { ...dashboard, recentDeals: deals.slice(0, 5) }
+    } catch {
+      return { ...dashboard, recentDeals: [] }
+    }
+  }, [])
 
   if (loading) return <div className="dashboard-loading"><div /><div /><div /><div /></div>
   if (error) return <div className="dashboard-error"><strong>Could not load your dashboard</strong><span>{error}</span><small>Check that the CRM server is running, then refresh.</small></div>
