@@ -1,13 +1,13 @@
 import { ArrowRight, ArrowUpRight, MapPin, Users, UserPlus, GitBranch, Handshake, TrendingUp, Target } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { api } from '../../services/api'
 import { formatCurrency, formatRelativeTime, getSetting, LEAD_SOURCES } from '../../utils/constants'
 import useResource from '../../hooks/useResource'
 import './Dashboard.css'
 
 const pretty = value => value.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())
-const STATUS_COLORS = ['#577b66', '#d09b56', '#7c9ca8', '#6876a1', '#b36f61', '#929c94']
+const STATUS_COLORS = ['#765fdc', '#d36d55', '#c08b2d', '#5379c7', '#be628e', '#3d9a90']
 
 export default function Dashboard() {
   const { data, loading, error } = useResource(() => api.getDashboard(), [])
@@ -20,16 +20,15 @@ export default function Dashboard() {
   const statusChart = data.leadsByStatus || []
   const seatChart = data.seatDemandByLocality || []
   const sourceTotal = sourceChart.reduce((sum, source) => sum + source.value, 0)
-  const today = new Intl.DateTimeFormat('en-IN', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())
   const name = getSetting('displayName', 'there')
 
   return (
     <div className="dashboard-page">
       <div className="dashboard-welcome">
         <div>
-          <p className="dashboard-date">{today} <span>·</span> NRG WORKSPACE CRM</p>
-          <h1>Good to see you, {name}.</h1>
-          <p className="welcome-subtitle">Here’s what’s happening across your workspace enquiries.</p>
+          <p className="dashboard-date">NRG WORKSPACE CRM</p>
+          <h1>{name === 'there' ? 'Workspace overview' : `${name} · workspace overview`}</h1>
+          <p className="welcome-subtitle">Lead, deal and activity records from your CRM.</p>
         </div>
         <Link className="dashboard-link" to="/app/leads">View leads <ArrowRight size={15} /></Link>
       </div>
@@ -54,11 +53,11 @@ export default function Dashboard() {
           <div className="chart-wrap">
             <ResponsiveContainer width="100%" height={235}>
               <LineChart data={data.leadsOverTime || []} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="#e9eeea" />
-                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#87938c' }} tickFormatter={date => new Date(date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#87938c' }} allowDecimals={false} />
-                <Tooltip contentStyle={{ borderRadius: 4, border: '1px solid #e1e8e2', fontSize: 12, boxShadow: '0 8px 25px #1d32221a' }} />
-                <Line type="monotone" dataKey="count" name="New leads" stroke="#4d755e" strokeWidth={2.5} dot={{ r: 3, fill: '#4d755e', strokeWidth: 0 }} activeDot={{ r: 5 }} />
+                <CartesianGrid vertical={false} stroke="#e8e5ec" />
+                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#858b98' }} tickFormatter={date => new Date(date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#858b98' }} allowDecimals={false} />
+                <Tooltip contentStyle={{ borderRadius: 4, border: '1px solid #e5e1ea', fontSize: 12, boxShadow: '0 8px 25px #27324a1a' }} />
+                <Line type="monotone" dataKey="count" name="New leads" stroke="#624cc8" strokeWidth={2.5} dot={{ r: 3, fill: '#624cc8', strokeWidth: 0 }} activeDot={{ r: 5 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -66,14 +65,27 @@ export default function Dashboard() {
 
         <article className="dashboard-panel source-panel">
           <PanelHeading eyebrow="WHERE THEY COME FROM" title="Lead sources" />
-          {sourceChart.length ? <div className="dashboard-bar-list">
-            {sourceChart.map((source, index) => {
-              const share = sourceTotal ? Math.round(source.value / sourceTotal * 100) : 0
-              return <div className="source-row" key={source.name}>
-                <div className="source-row-top"><span><i style={{ background: STATUS_COLORS[index % STATUS_COLORS.length] }} />{LEAD_SOURCES[source.name]?.label || pretty(source.name)}</span><strong>{source.value}<small>{share}%</small></strong></div>
-                <div className="source-track"><span style={{ width: `${share}%`, background: STATUS_COLORS[index % STATUS_COLORS.length] }} /></div>
-              </div>
-            })}
+          {sourceChart.length ? <div className="source-chart-layout">
+            <div className="source-donut">
+              <ResponsiveContainer width="100%" height={190}>
+                <PieChart>
+                  <Pie data={sourceChart} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={48} outerRadius={70} paddingAngle={2} stroke="none">
+                    {sourceChart.map((source, index) => <Cell key={source.name} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip contentStyle={{ border: '1px solid #e5e1ea', borderRadius: 4, fontSize: 11 }} formatter={(value, name) => [value, LEAD_SOURCES[name]?.label || pretty(name)]} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="source-donut-total"><strong>{sourceTotal}</strong><span>leads</span></div>
+            </div>
+            <div className="source-legend">
+              {sourceChart.map((source, index) => {
+                const share = sourceTotal ? Math.round(source.value / sourceTotal * 100) : 0
+                return <div className="source-legend-row" key={source.name}>
+                  <span><i style={{ background: STATUS_COLORS[index % STATUS_COLORS.length] }} />{LEAD_SOURCES[source.name]?.label || pretty(source.name)}</span>
+                  <strong>{share}%</strong>
+                </div>
+              })}
+            </div>
           </div> : <EmptyState>No lead source data yet.</EmptyState>}
         </article>
       </section>

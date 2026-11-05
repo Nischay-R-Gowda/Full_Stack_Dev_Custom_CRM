@@ -15,7 +15,7 @@ export default function Pipelines() {
   const [form, setForm] = useState({ name: '', description: '', isDefault: false })
   const [stageModal, setStageModal] = useState(null)
   const [editingStage, setEditingStage] = useState(null)
-  const [stageForm, setStageForm] = useState({ name: '', color: '#6366f1', position: 0, isClosedWon: false, isClosedLost: false })
+  const [stageForm, setStageForm] = useState({ name: '', color: '#624cc8', position: 0, isClosedWon: false, isClosedLost: false })
 
   const { data: pipelines, loading, reload: load } = useResource(async () => {
     const data = await api.getPipelines()
@@ -61,7 +61,7 @@ export default function Pipelines() {
       setStageForm({ name: stage.name, color: stage.color, position: stage.position, isClosedWon: stage.isClosedWon, isClosedLost: stage.isClosedLost })
     } else {
       const lastPosition = pipeline.stages.length ? Math.max(...pipeline.stages.map(s => s.position)) + 1 : 0
-      setStageForm({ name: '', color: '#6366f1', position: lastPosition, isClosedWon: false, isClosedLost: false })
+      setStageForm({ name: '', color: '#624cc8', position: lastPosition, isClosedWon: false, isClosedLost: false })
     }
     setError('')
   }

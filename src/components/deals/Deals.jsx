@@ -2,15 +2,15 @@ import { useState } from 'react'
 import { Plus, ArrowRight, CheckCircle2, XCircle, Trash2 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { api } from '../../services/api'
-import { formatCurrency, formatDate } from '../../utils/constants'
+import { formatCurrency, formatDate, formatDateTime } from '../../utils/constants'
 import useResource from '../../hooks/useResource'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
-import Select from '../ui/Input'
+import Select from '../ui/SearchableSelect'
 import { Badge } from '../ui/Badge'
 import Modal from '../ui/Modal'
 
-const emptyForm = { dealName: '', amount: '', contactId: '', stageId: '', pipelineId: '', expectedCloseDate: '', notes: '', probability: 50 }
+const emptyForm = { dealName: '', amount: '', contactId: '', stageId: '', pipelineId: '', expectedCloseDate: '', notes: '' }
 
 export default function Deals() {
   const [deals, setDeals] = useState([])
@@ -19,8 +19,16 @@ export default function Deals() {
   const [pipelineFilter, setPipelineFilter] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [detailDeal, setDetailDeal] = useState(null)
+  const [expectedCloseDraft, setExpectedCloseDraft] = useState('')
   const [error, setError] = useState('')
   const [form, setForm] = useState(emptyForm)
+
+  const openDetails = deal => {
+    setDetailDeal(deal)
+    if (!deal.expectedCloseDate) { setExpectedCloseDraft(''); return }
+    const date = new Date(deal.expectedCloseDate)
+    setExpectedCloseDraft(Number.isNaN(date.getTime()) ? '' : new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 10))
+  }
 
   // The hook gives us `loading` and `error` for the page; deals are held in
   // local state because the pipeline selector rewrites them client-side.
@@ -83,7 +91,6 @@ export default function Deals() {
         pipelineId: Number(form.pipelineId),
         expectedCloseDate: form.expectedCloseDate || null,
         notes: form.notes || null,
-        probability: parseInt(form.probability, 10),
       })
       setModalOpen(false); reload()
     } catch (err) { setError(err.message) }
@@ -91,6 +98,16 @@ export default function Deals() {
 
   const handleMoveStage = async (dealId, stageId) => {
     try { await api.moveDealStage(dealId, stageId); reload() } catch (err) { alert(err.message) }
+  }
+
+  const saveExpectedClose = async () => {
+    try {
+      const value = expectedCloseDraft ? new Date(`${expectedCloseDraft}T12:00:00`).toISOString() : null
+      const updated = await api.updateDeal(detailDeal.id, { expectedCloseDate: value })
+      setDetailDeal(updated)
+      setDeals(current => current.map(deal => deal.id === updated.id ? updated : deal))
+      toast.success('Expected close date saved')
+    } catch (err) { toast.error(err.message || 'Could not save the expected close date') }
   }
 
   const handleDelete = async (id) => {
@@ -117,7 +134,7 @@ export default function Deals() {
           const prevStage = dealsByStage[stageIndex - 1]?.stage
           const nextStage = dealsByStage[stageIndex + 1]?.stage
           return (
-            <div key={stage.id} className="flex-shrink-0 w-72 bg-surface-100 rounded-xl p-3 space-y-3">
+            <div key={stage.id} className="flex-shrink-0 w-72 bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-700 border-t-4 rounded-xl p-3 space-y-3" style={{ borderTopColor: stage.color }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: stage.color }} />
@@ -130,9 +147,10 @@ export default function Deals() {
               <p className="text-xs text-surface-500 font-medium">{formatCurrency(stageValue)}</p>
               <div className="space-y-2">
                 {stageDeals.map(deal => (
-                  <div key={deal.id} className="bg-white rounded-lg border border-surface-200 p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => setDetailDeal(deal)}>
+                  <div key={deal.id} className="bg-white rounded-lg border border-surface-200 p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => openDetails(deal)}>
                     <p className="text-sm font-medium text-surface-800 truncate">{deal.dealName}</p>
                     <p className="text-xs text-surface-500 mt-1 truncate">{deal.contact?.firstName} {deal.contact?.lastName}{deal.contact?.company ? ` · ${deal.contact.company}` : ''}</p>
+                    <p className="text-[10px] text-surface-400 mt-1">Created {formatDateTime(deal.createdAt)}</p>
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-sm font-semibold text-surface-800">{formatCurrency(deal.amount)}</span>
                       {deal.expectedCloseDate && <span className="text-xs text-surface-400">{formatDate(deal.expectedCloseDate)}</span>}
@@ -155,10 +173,7 @@ export default function Deals() {
         <form onSubmit={handleCreate} className="space-y-4">
           {error && <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{error}</div>}
           <Input label="Deal Name *" required value={form.dealName} onChange={e => setForm({ ...form, dealName: e.target.value })} />
-          <div className="grid grid-cols-2 gap-4">
-            <Input label="Amount (₹) *" type="number" required min="0" step="any" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
-            <Input label="Probability %" type="number" min="0" max="100" value={form.probability} onChange={e => setForm({ ...form, probability: e.target.value })} />
-          </div>
+          <Input label="Amount (₹) *" type="number" required min="0" step="any" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
           <Input label="Expected Close Date" type="date" value={form.expectedCloseDate} onChange={e => setForm({ ...form, expectedCloseDate: e.target.value })} />
           <div className="grid grid-cols-2 gap-4">
             <Select
@@ -211,6 +226,7 @@ export default function Deals() {
                   {detailDeal.contact ? `${detailDeal.contact.firstName} ${detailDeal.contact.lastName}` : 'No contact'}
                   {detailDeal.contact?.company ? ` · ${detailDeal.contact.company}` : ''}
                 </p>
+                {detailDeal.contact?.email && <p className="text-xs text-surface-500 mt-1">{detailDeal.contact.email}</p>}
               </div>
               <Badge color={detailDeal.status === 'won' ? 'green' : detailDeal.status === 'lost' ? 'red' : 'blue'}>
                 {detailDeal.status === 'won' ? 'Closed Won' : detailDeal.status === 'lost' ? 'Closed Lost' : 'Open'}
@@ -221,9 +237,9 @@ export default function Deals() {
               <div className="p-3 bg-surface-50 rounded-lg"><p className="text-xs text-surface-500">Amount</p><p className="text-sm font-semibold text-surface-800 mt-0.5">{formatCurrency(detailDeal.amount)}</p></div>
               <div className="p-3 bg-surface-50 rounded-lg"><p className="text-xs text-surface-500">Stage</p><p className="text-sm font-semibold text-surface-800 mt-0.5">{detailDeal.stage?.name}</p></div>
               <div className="p-3 bg-surface-50 rounded-lg"><p className="text-xs text-surface-500">Pipeline</p><p className="text-sm font-semibold text-surface-800 mt-0.5">{detailDeal.pipeline?.name}</p></div>
-              <div className="p-3 bg-surface-50 rounded-lg"><p className="text-xs text-surface-500">Probability</p><p className="text-sm font-semibold text-surface-800 mt-0.5">{detailDeal.probability}%</p></div>
-              <div className="p-3 bg-surface-50 rounded-lg"><p className="text-xs text-surface-500">Expected Close</p><p className="text-sm font-semibold text-surface-800 mt-0.5">{formatDate(detailDeal.expectedCloseDate)}</p></div>
-              <div className="p-3 bg-surface-50 rounded-lg"><p className="text-xs text-surface-500">Actual Close</p><p className="text-sm font-semibold text-surface-800 mt-0.5">{formatDate(detailDeal.actualCloseDate)}</p></div>
+              <div className="p-3 bg-surface-50 rounded-lg"><label htmlFor="expected-close-date" className="block text-xs text-surface-500">Expected Close</label><div className="mt-1 flex flex-wrap items-center gap-2"><input id="expected-close-date" type="date" value={expectedCloseDraft} onChange={event => setExpectedCloseDraft(event.target.value)} className="min-w-0 bg-transparent text-sm font-semibold text-surface-800 focus:outline-none focus:ring-1 focus:ring-primary-500" /><button type="button" onClick={saveExpectedClose} className="text-xs font-semibold text-primary-700 hover:text-primary-900">Save</button></div></div>
+              <div className="p-3 bg-surface-50 rounded-lg"><p className="text-xs text-surface-500">Created</p><p className="text-sm font-semibold text-surface-800 mt-0.5">{formatDateTime(detailDeal.createdAt)}</p></div>
+              <div className="p-3 bg-surface-50 rounded-lg"><p className="text-xs text-surface-500">Actual Close</p><p className="text-sm font-semibold text-surface-800 mt-0.5">{detailDeal.actualCloseDate ? formatDateTime(detailDeal.actualCloseDate) : detailDeal.status === 'open' ? 'Set when deal closes' : '—'}</p></div>
               {detailDeal.status === 'lost' && detailDeal.lostReason && (
                 <div className="p-3 bg-red-50 rounded-lg col-span-2"><p className="text-xs text-red-600">Lost Reason</p><p className="text-sm font-semibold text-red-800 mt-0.5">{detailDeal.lostReason}</p></div>
               )}

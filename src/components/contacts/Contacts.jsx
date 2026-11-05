@@ -131,7 +131,7 @@ export default function Contacts() {
                   <tr key={c.id} className="hover:bg-surface-50/50 transition-colors cursor-pointer" onClick={() => setDetailContact(c)}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0"><span className="text-sm font-medium text-primary-700">{getInitials(c.firstName, c.lastName)}</span></div>
+                        <div className="w-9 h-9 bg-primary-100 rounded-md flex items-center justify-center flex-shrink-0"><span className="text-sm font-semibold text-primary-700">{getInitials(c.firstName, c.lastName)}</span></div>
                         <div>
                           <p className="text-sm font-medium text-surface-800">{c.firstName} {c.lastName}</p>
                           <p className="text-xs text-surface-500">{c.email}</p>
@@ -218,7 +218,7 @@ export default function Contacts() {
         {detailContact && (
           <div className="space-y-5">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-primary-100 rounded-full flex items-center justify-center"><span className="text-xl font-bold text-primary-700">{getInitials(detailContact.firstName, detailContact.lastName)}</span></div>
+              <div className="w-14 h-14 bg-primary-100 rounded-md flex items-center justify-center"><span className="text-xl font-bold text-primary-700">{getInitials(detailContact.firstName, detailContact.lastName)}</span></div>
               <div>
                 <h3 className="text-lg font-semibold text-surface-800">{detailContact.firstName} {detailContact.lastName}</h3>
                 <p className="text-sm text-surface-500">{detailContact.jobTitle} {detailContact.company ? `· ${detailContact.company}` : ''}</p>

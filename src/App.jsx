@@ -10,6 +10,7 @@ import Sources from './components/sources/Sources'
 import Activities from './components/activities/Activities'
 import Reports from './components/reports/Reports'
 import Settings from './components/settings/Settings'
+import Workflows from './components/workflows/Workflows'
 import NotFound from './components/common/NotFound'
 
 export default function App() {
@@ -26,6 +27,7 @@ export default function App() {
       <Route path="/app/leads" element={<AppShell breadcrumbs={['Leads']}><Leads /></AppShell>} />
       <Route path="/app/deals" element={<AppShell breadcrumbs={['Deals & Pipeline']}><Deals /></AppShell>} />
       <Route path="/app/pipelines" element={<AppShell breadcrumbs={['Pipelines']}><Pipelines /></AppShell>} />
+      <Route path="/app/workflows" element={<AppShell breadcrumbs={['Workflows']}><Workflows /></AppShell>} />
       <Route path="/app/sources" element={<AppShell breadcrumbs={['Lead Sources']}><Sources /></AppShell>} />
       <Route path="/app/activities" element={<AppShell breadcrumbs={['Activities']}><Activities /></AppShell>} />
       <Route path="/app/reports" element={<AppShell breadcrumbs={['Reports']}><Reports /></AppShell>} />

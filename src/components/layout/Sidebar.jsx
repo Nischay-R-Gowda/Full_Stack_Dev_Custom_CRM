@@ -1,6 +1,6 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard, Users, UserPlus, Kanban, GitBranch,
+  LayoutDashboard, Users, UserPlus, Kanban, GitBranch, Workflow,
   Phone, MessageSquare, BarChart3, Settings, ChevronLeft,
   ChevronRight, LogOut
 } from 'lucide-react'
@@ -12,6 +12,7 @@ const navItems = [
   { path: '/app/leads', icon: UserPlus, label: 'Leads' },
   { path: '/app/deals', icon: Kanban, label: 'Deals & Pipeline' },
   { path: '/app/pipelines', icon: GitBranch, label: 'Pipelines' },
+  { path: '/app/workflows', icon: Workflow, label: 'Workflows' },
   { path: '/app/sources', icon: Phone, label: 'Lead Sources' },
   { path: '/app/activities', icon: MessageSquare, label: 'Activities' },
   { path: '/app/reports', icon: BarChart3, label: 'Reports' },
@@ -25,11 +26,11 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   return (
     <aside className={`${collapsed ? 'w-16' : 'w-64'} bg-white dark:bg-surface-900 dark:border-surface-700 border-r border-surface-200 flex flex-col transition-all duration-200 h-screen sticky top-0 z-40`}>
       {/* Brand */}
-      <div className="flex items-center gap-3 px-4 h-14 border-b border-surface-200 dark:border-surface-700">
-        <span className="w-9 h-9 bg-[#49664d] rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs" style={{ fontFamily: '"Segoe Print", "Bradley Hand", cursive', transform: 'rotate(-6deg)' }}>nrg</span>
+      <div className="flex items-center gap-3 px-4 h-16 border-b border-surface-200 dark:border-surface-700">
+        <img src="/nrg-mark.svg" alt="" className="w-11 h-11 object-contain flex-shrink-0" />
         {!collapsed && (
           <div className="min-w-0">
-            <span className="text-surface-800 dark:text-surface-100 text-sm block truncate" style={{ fontFamily: '"Segoe Print", "Bradley Hand", cursive', fontWeight: 600, letterSpacing: '-.04em' }}>NRG Co-working</span>
+            <span className="text-surface-800 dark:text-surface-100 text-sm block truncate font-semibold">NRG Co-working</span>
             <span className="text-[10px] text-surface-400 tracking-wide">Bengaluru · Workspace CRM</span>
           </div>
         )}
@@ -67,7 +68,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       </div>
 
       {/* Collapse toggle */}
-      <button onClick={() => setCollapsed(!collapsed)} className="absolute -right-3 top-14 w-6 h-6 bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-full flex items-center justify-center shadow-sm hover:bg-surface-50 z-50">
+      <button onClick={() => setCollapsed(!collapsed)} className="absolute -right-3 top-16 w-6 h-6 bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-full flex items-center justify-center shadow-sm hover:bg-surface-50 z-50">
         {collapsed ? <ChevronRight className="w-3 h-3 text-surface-500" /> : <ChevronLeft className="w-3 h-3 text-surface-500" />}
       </button>
     </aside>

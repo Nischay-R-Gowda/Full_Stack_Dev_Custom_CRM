@@ -11,7 +11,7 @@ function ChartEmpty() {
   return <div className="flex items-center justify-center h-[280px] text-sm text-surface-400">No data available</div>
 }
 
-const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#22c55e', '#3b82f6', '#ef4444']
+const COLORS = ['#765fdc', '#d36d55', '#c08b2d', '#5379c7', '#be628e', '#3d9a90', '#8a758b']
 
 export default function Reports() {
   const { data, loading, error } = useResource(() => api.getReports(), [])
@@ -133,7 +133,7 @@ export default function Reports() {
           <h3 className="text-sm font-semibold text-surface-700 mb-4">Leads by Source</h3>
           {sourceData.length === 0 ? <ChartEmpty /> : (
             <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={sourceData}><CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} /><YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} allowDecimals={false} /><Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }} /><Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} /></BarChart>
+              <BarChart data={sourceData}><CartesianGrid strokeDasharray="3 3" stroke="#e8e2da" /><XAxis dataKey="name" tick={{ fontSize: 11, fill: '#7c716b' }} /><YAxis tick={{ fontSize: 11, fill: '#7c716b' }} allowDecimals={false} /><Tooltip contentStyle={{ borderRadius: '4px', border: '1px solid #e8e2da' }} /><Bar dataKey="count" fill="#624cc8" radius={[2, 2, 0, 0]} /></BarChart>
             </ResponsiveContainer>
           )}
         </div>
@@ -149,7 +149,7 @@ export default function Reports() {
           <h3 className="text-sm font-semibold text-surface-700 mb-4">Pipeline Value by Stage</h3>
           {stageData.length === 0 ? <ChartEmpty /> : (
             <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={stageData}><CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} /><YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={v => formatCurrency(v)} /><Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }} formatter={(v) => [formatCurrency(v), 'Value']} /><Bar dataKey="value" fill="#8b5cf6" radius={[4, 4, 0, 0]} /></BarChart>
+              <BarChart data={stageData}><CartesianGrid strokeDasharray="3 3" stroke="#e8e2da" /><XAxis dataKey="name" tick={{ fontSize: 11, fill: '#7c716b' }} /><YAxis tick={{ fontSize: 11, fill: '#7c716b' }} tickFormatter={v => formatCurrency(v)} /><Tooltip contentStyle={{ borderRadius: '4px', border: '1px solid #e8e2da' }} formatter={(v) => [formatCurrency(v), 'Value']} /><Bar dataKey="value" fill="#d36d55" radius={[2, 2, 0, 0]} /></BarChart>
             </ResponsiveContainer>
           )}
         </div>
@@ -157,7 +157,7 @@ export default function Reports() {
           <h3 className="text-sm font-semibold text-surface-700 mb-4">Won vs Lost Distribution</h3>
           {wonLostData.length === 0 ? <ChartEmpty /> : (
             <ResponsiveContainer width="100%" height={280}>
-              <PieChart><Pie data={wonLostData} cx="50%" cy="50%" outerRadius={90} dataKey="value" label={({ name, value }) => `${name}: ${formatCurrency(value)}`}>{wonLostData.map((_, i) => <Cell key={i} fill={i === 0 ? '#22c55e' : '#ef4444'} />)}</Pie><Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }} /></PieChart>
+              <PieChart><Pie data={wonLostData} cx="50%" cy="50%" outerRadius={90} dataKey="value" label={({ name, value }) => `${name}: ${formatCurrency(value)}`}>{wonLostData.map((_, i) => <Cell key={i} fill={i === 0 ? '#4f8a72' : '#bf704c'} />)}</Pie><Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e4e3db' }} /></PieChart>
             </ResponsiveContainer>
           )}
         </div>
@@ -165,7 +165,7 @@ export default function Reports() {
           <div className="bg-white dark:bg-surface-900 dark:border-surface-700 rounded-xl border border-surface-200 p-5 lg:col-span-2">
             <h3 className="text-sm font-semibold text-surface-700 mb-4">Won Revenue Over Time</h3>
             <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={monthlyData}><CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} /><YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={v => formatCurrency(v)} /><Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }} formatter={(v) => [formatCurrency(v), 'Revenue']} /><Line type="monotone" dataKey="revenue" stroke="#22c55e" strokeWidth={2} dot={{ fill: '#22c55e', r: 3 }} /></LineChart>
+              <LineChart data={monthlyData}><CartesianGrid strokeDasharray="3 3" stroke="#e8e2da" /><XAxis dataKey="name" tick={{ fontSize: 11, fill: '#7c716b' }} /><YAxis tick={{ fontSize: 11, fill: '#7c716b' }} tickFormatter={v => formatCurrency(v)} /><Tooltip contentStyle={{ borderRadius: '4px', border: '1px solid #e8e2da' }} formatter={(v) => [formatCurrency(v), 'Revenue']} /><Line type="monotone" dataKey="revenue" stroke="#5379c7" strokeWidth={2} dot={{ fill: '#5379c7', r: 3 }} /></LineChart>
             </ResponsiveContainer>
           </div>
         )}

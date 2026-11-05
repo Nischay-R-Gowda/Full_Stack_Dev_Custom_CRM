@@ -210,7 +210,7 @@ export default function Activities() {
                           {activity.description && <p className="text-xs text-surface-500 mt-0.5">{activity.description}</p>}
                         </div>
                       </td>
-                      <td className="px-4 py-3"><span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${ACTIVITY_TYPES[activity.type]?.color || 'bg-gray-100 text-gray-600'}`}><Icon className="w-3 h-3" />{typeLabel(activity.type)}</span></td>
+                      <td className="px-4 py-3"><span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm border border-current/10 text-xs font-medium ${ACTIVITY_TYPES[activity.type]?.color || 'bg-gray-100 text-gray-600'}`}><Icon className="w-3 h-3" />{typeLabel(activity.type)}</span></td>
                       <td className="px-4 py-3 text-xs text-surface-500">{linked || <span className="text-surface-300">—</span>}</td>
                       <td className="px-4 py-3 text-sm">
                         {activity.dueDate ? (

@@ -43,10 +43,10 @@ export default function Sources() {
   }
 
   const colorMap = {
-    blue: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', gradient: 'from-blue-500 to-blue-600' },
-    purple: { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200', gradient: 'from-purple-500 to-purple-600' },
-    green: { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200', gradient: 'from-green-500 to-green-600' },
-    orange: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', gradient: 'from-orange-500 to-orange-600' },
+    blue: { bg: 'bg-[#eaf1ff]', text: 'text-[#4567ae]', border: 'border-[#d9e4ff]', icon: 'bg-[#eaf1ff]' },
+    purple: { bg: 'bg-[#eeecff]', text: 'text-[#5849ae]', border: 'border-[#dcd7ff]', icon: 'bg-[#eeecff]' },
+    green: { bg: 'bg-[#e5f5f1]', text: 'text-[#287667]', border: 'border-[#cfebe3]', icon: 'bg-[#e5f5f1]' },
+    orange: { bg: 'bg-[#fff0eb]', text: 'text-[#a45142]', border: 'border-[#f4d9cf]', icon: 'bg-[#fff0eb]' },
   }
 
   return (
@@ -54,7 +54,7 @@ export default function Sources() {
       <div>
         <h1 className="text-xl font-semibold text-surface-800">Lead Sources</h1>
         <p className="text-sm text-surface-500 mt-1">
-          Generate sample enquiries to see how marketing channels feed the pipeline.
+          Review configured lead sources and add demonstration records.
         </p>
       </div>
 
@@ -64,7 +64,7 @@ export default function Sources() {
         <div>
           <p className="text-sm font-medium text-amber-900">These integrations are SIMULATED</p>
           <p className="text-xs text-amber-700 mt-0.5">
-            No Google Ads, Meta Ads, website or telephony API is contacted. Each button writes a realistic sample record through the normal backend path, so the Leads page and Dashboard update exactly as they would for a real source.
+            These buttons do not connect to Google Ads, Meta Ads or telephony. Each adds a sample lead through the CRM so you can review how a new record appears in Leads and Reports.
           </p>
         </div>
       </div>
@@ -74,8 +74,8 @@ export default function Sources() {
           const colors = colorMap[source.color]
           return (
             <div key={source.key} className="bg-white rounded-xl border border-surface-200 p-6 hover:shadow-md transition-shadow">
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center mb-4`}>
-                <source.Icon className="w-6 h-6 text-white" />
+              <div className={`w-11 h-11 rounded-md ${colors.icon} flex items-center justify-center mb-4`}>
+                <source.Icon className={`w-5 h-5 ${colors.text}`} />
               </div>
               <h3 className="text-base font-semibold text-surface-800 mb-1">{source.label}</h3>
               <p className="text-xs text-surface-500 mb-4 min-h-[2rem]">{source.description}</p>
@@ -92,22 +92,22 @@ export default function Sources() {
       </div>
 
       {lastSim && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+        <div className="bg-[#f2efff] border border-[#dcd7ff] rounded-xl p-4">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-medium text-emerald-800">
+              <p className="text-sm font-medium text-[#5849ae]">
                 Lead created: {lastSim.leadNumber}
               </p>
-              <p className="text-xs text-emerald-700 mt-1">
+              <p className="text-xs text-[#665c9c] mt-1">
                 Contact: {lastSim.contact.firstName} {lastSim.contact.lastName} ({lastSim.contact.email}) · Company: {lastSim.company} · Source: {lastSim.source.replace(/_/g, ' ')} · Type: {lastSim.type.toUpperCase()}
               </p>
-              <p className="text-xs text-emerald-600 mt-0.5">
+              <p className="text-xs text-[#786fa6] mt-0.5">
                 Created at {new Date(lastSim.createdAt).toLocaleString()}
               </p>
             </div>
             <button
               onClick={() => navigate('/leads')}
-              className="flex items-center gap-1 text-sm font-medium text-emerald-800 hover:text-emerald-900 whitespace-nowrap"
+              className="flex items-center gap-1 text-sm font-medium text-[#5849ae] hover:text-[#403487] whitespace-nowrap"
             >
               View in Leads <ArrowRight className="w-4 h-4" />
             </button>

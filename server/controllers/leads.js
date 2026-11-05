@@ -78,8 +78,8 @@ function validateLead(fields, { partial = false } = {}) {
   if (fields.seatsRequired !== null && fields.seatsRequired !== undefined && fields.seatsRequired < 1) {
     throw new Error('Seats required must be at least 1.')
   }
-  if (fields.locality !== null && fields.locality !== undefined && !LOCALITIES.includes(fields.locality)) {
-    throw new Error(`Locality must be one of: ${LOCALITIES.join(', ')}.`)
+  if (fields.locality !== null && fields.locality !== undefined && typeof fields.locality !== 'string') {
+    throw new Error('Locality must be text.')
   }
   if (fields.duration !== null && fields.duration !== undefined && !DURATIONS.includes(fields.duration)) {
     throw new Error(`Duration must be one of: ${DURATIONS.join(', ')}.`)
@@ -172,7 +172,7 @@ export async function qualifyLead(id, qualificationData = {}) {
   const lead = await prisma.lead.findUnique({ where: { id } })
   if (!lead) throw new Error('Lead not found.')
 
-  const { type, qualificationNotes, contactPhone, contactCompany } = qualificationData
+  const { type, qualificationNotes, contactEmail, contactFirstName, contactLastName, contactPhone, contactCompany } = qualificationData
 
   if (type && !LEAD_TYPES.includes(type)) {
     throw new Error(`Lead type must be one of: ${LEAD_TYPES.join(', ')}.`)
@@ -184,6 +184,15 @@ export async function qualifyLead(id, qualificationData = {}) {
   if (qualificationNotes !== undefined) {
     leadFields.qualificationNotes = qualificationNotes ? String(qualificationNotes).trim() : null
   }
+
+  // Qualification is also the handoff point for workspace requirements. Save
+  // these Lead columns directly so the table, filters and eventual deal all
+  // use the same values.
+  const qualificationFields = pickLeadFields(qualificationData)
+  for (const field of ['company', 'companySize', 'industry', 'website', 'expectedValue', 'seatsRequired', 'locality', 'duration']) {
+    if (qualificationData[field] !== undefined) leadFields[field] = qualificationFields[field]
+  }
+  validateLead(leadFields, { partial: true })
 
   let contactId = lead.contactId
 
@@ -199,18 +208,27 @@ export async function qualifyLead(id, qualificationData = {}) {
       // When the rep supplies contact fields in the qualify form, honour
       // them; otherwise fall back to a deterministic synthetic identity so
       // the flow never blocks on missing contact detail.
-      const [firstName, lastName] = lead.company
+      const [fallbackFirstName, fallbackLastName] = lead.company
         ? ['NRG', `Lead ${lead.id}`]
         : ['Prospect', String(lead.id)]
       const contact = await findOrCreateContact({
-        email: `lead-${lead.id}@nrg.local`,
-        firstName,
-        lastName,
+        email: contactEmail || `lead-${lead.id}@nrg.local`,
+        firstName: contactFirstName || fallbackFirstName,
+        lastName: contactLastName || fallbackLastName,
         phone: contactPhone,
-        company: contactCompany || lead.company,
+        company: contactCompany || leadFields.company || lead.company,
         leadSource: lead.source,
       })
       contactId = contact.id
+    }
+    else {
+      const contactChanges = {}
+      if (contactFirstName && String(contactFirstName).trim()) contactChanges.firstName = String(contactFirstName).trim()
+      if (contactLastName && String(contactLastName).trim()) contactChanges.lastName = String(contactLastName).trim()
+      if (contactEmail && String(contactEmail).trim()) contactChanges.email = String(contactEmail).trim().toLowerCase()
+      if (contactPhone !== undefined) contactChanges.phone = contactPhone ? String(contactPhone).trim() : null
+      if (contactCompany !== undefined) contactChanges.company = contactCompany ? String(contactCompany).trim() : null
+      if (Object.keys(contactChanges).length) await prisma.contact.update({ where: { id: contactId }, data: contactChanges })
     }
     leadFields.contactId = contactId
   }
@@ -244,8 +262,8 @@ export async function qualifyLead(id, qualificationData = {}) {
       const { stage, pipelineId } = await resolveConversionTarget(lead, { stageId: qualificationData.stageId, pipelineId: qualificationData.pipelineId })
       deal = await prisma.deal.create({
         data: {
-          dealName: (qualificationData.dealName && String(qualificationData.dealName).trim()) || `${lead.company || 'New'} Opportunity`,
-          amount: toNumberOrNull(qualificationData.amount) ?? lead.expectedValue ?? 0,
+          dealName: (qualificationData.dealName && String(qualificationData.dealName).trim()) || `${leadFields.company || lead.company || 'New'} Opportunity`,
+          amount: toNumberOrNull(qualificationData.amount) ?? leadFields.expectedValue ?? lead.expectedValue ?? 0,
           probability: 50,
           expectedCloseDate: toDateOrNull(qualificationData.expectedCloseDate),
           notes: qualificationData.notes ? String(qualificationData.notes).trim() : lead.notes,

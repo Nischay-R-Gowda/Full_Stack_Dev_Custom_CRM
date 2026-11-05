@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
-import { Plus, Search, X, ChevronRight, UserCheck, UserPlus, ArrowRight } from 'lucide-react'
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { Plus, Search, X, UserCheck, ArrowRight, ArrowDownUp } from 'lucide-react'
+import { toast } from 'react-hot-toast'
 import { api } from '../../services/api'
 import { formatDateTime, formatCurrency, LEAD_STATUSES, LEAD_SOURCES, LEAD_TYPES, LOCALITIES, DURATIONS } from '../../utils/constants'
 import useResource from '../../hooks/useResource'
@@ -10,13 +11,91 @@ import { Badge } from '../ui/Badge'
 import Modal from '../ui/Modal'
 
 const emptyLeadForm = { company: '', companySize: '', industry: '', website: '', notes: '', expectedValue: '', source: 'manual', contactId: '', seatsRequired: '', locality: '', duration: '' }
-const emptyQualifyForm = { type: 'sql', qualificationNotes: '', contactEmail: '', contactFirstName: '', contactLastName: '', contactPhone: '', contactCompany: '' }
+const emptyQualifyForm = { type: 'sql', qualificationNotes: '', company: '', companySize: '', industry: '', website: '', expectedValue: '', seatsRequired: '', locality: '', duration: '', contactEmail: '', contactFirstName: '', contactLastName: '', contactPhone: '', contactCompany: '' }
+const isGeneratedLeadContact = contact => contact?.firstName === 'NRG' && /^Lead \d+$/.test(contact?.lastName || '')
+
+function SortHeader({ label, column, active, direction, onSort }) {
+  return (
+    <button type="button" onClick={() => onSort(column)} className={`inline-flex items-center gap-1 ${active ? 'text-primary-700' : 'text-surface-500'} hover:text-primary-700`}>
+      {label}<ArrowDownUp size={12} className={active ? 'opacity-100' : 'opacity-50'} />{active && <span>{direction === 'asc' ? '↑' : '↓'}</span>}
+    </button>
+  )
+}
+
+function InlineLeadField({ label, value, displayValue, type = 'text', options, onSave, align = 'left' }) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(value ?? '')
+  const inputRef = useRef(null)
+  const skipBlurSave = useRef(false)
+
+  useEffect(() => { if (editing) inputRef.current?.focus() }, [editing])
+  const cancel = () => { skipBlurSave.current = true; setDraft(value ?? ''); setEditing(false) }
+  const save = async () => {
+    if (skipBlurSave.current) { skipBlurSave.current = false; return }
+    if (String(draft ?? '') === String(value ?? '')) { setEditing(false); return }
+    const saved = await onSave(draft)
+    if (saved) setEditing(false)
+  }
+
+  if (editing && options) {
+    return (
+      <select
+        ref={inputRef}
+        aria-label={`Set ${label}`}
+        value={draft}
+        onChange={event => setDraft(event.target.value)}
+        onBlur={save}
+        onKeyDown={event => { if (event.key === 'Escape') cancel() }}
+        className="max-w-full rounded border border-primary-300 bg-white px-2 py-1 text-xs text-surface-700 focus:outline-none focus:ring-2 focus:ring-primary-400"
+      >
+        <option value="">Not set</option>
+        {options.map(option => <option key={option} value={option}>{option}</option>)}
+      </select>
+    )
+  }
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        aria-label={`Set ${label}`}
+        type={type}
+        min={type === 'number' ? (label === 'seats' ? 1 : 0) : undefined}
+        step={type === 'number' && label === 'budget' ? 'any' : undefined}
+        list={label === 'location' ? 'lead-locality-options' : undefined}
+        value={draft}
+        onChange={event => setDraft(event.target.value)}
+        onBlur={save}
+        onKeyDown={event => {
+          if (event.key === 'Enter') { event.preventDefault(); event.currentTarget.blur() }
+          if (event.key === 'Escape') cancel()
+        }}
+        className="w-28 max-w-full rounded border border-primary-300 bg-white px-2 py-1 text-xs text-surface-700 focus:outline-none focus:ring-2 focus:ring-primary-400"
+      />
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      title={`Click to edit ${label}`}
+      aria-label={`Edit ${label}`}
+      onClick={() => { skipBlurSave.current = false; setDraft(value ?? ''); setEditing(true) }}
+      className={`inline-flex items-center gap-1 rounded px-1.5 py-1 text-sm transition-colors hover:bg-primary-50 hover:text-primary-700 ${align === 'right' ? 'justify-end' : ''} ${displayValue ? 'text-surface-600 dark:text-surface-300' : 'text-primary-700'}`}
+    >
+      {displayValue || <span className="text-xs">+ Add</span>}
+    </button>
+  )
+}
 
 export default function Leads() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [sourceFilter, setSourceFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
+  const [localityFilter, setLocalityFilter] = useState('')
+  const [sortBy, setSortBy] = useState('createdAt')
+  const [sortDirection, setSortDirection] = useState('desc')
   const [modalOpen, setModalOpen] = useState(false)
   const [detailLead, setDetailLead] = useState(null)
   const [qualifyModal, setQualifyModal] = useState(null)
@@ -30,6 +109,21 @@ export default function Leads() {
     () => api.getLeads({ search, status: statusFilter, source: sourceFilter, type: typeFilter }),
     [search, statusFilter, sourceFilter, typeFilter]
   )
+
+  const visibleLeads = useMemo(() => (leads || [])
+    .filter(lead => !localityFilter || lead.locality === localityFilter)
+    .slice()
+    .sort((a, b) => {
+      const left = a[sortBy]
+      const right = b[sortBy]
+      const direction = sortDirection === 'asc' ? 1 : -1
+      if (typeof left === 'number' || typeof right === 'number') return ((Number(left) || 0) - (Number(right) || 0)) * direction
+      return String(left || '').localeCompare(String(right || ''), undefined, { sensitivity: 'base' }) * direction
+    }), [leads, localityFilter, sortBy, sortDirection])
+  const localityOptions = useMemo(() => [...new Set([
+    ...LOCALITIES.filter(locality => locality !== 'Other'),
+    ...(leads || []).map(lead => lead.locality).filter(Boolean),
+  ])].sort((a, b) => a.localeCompare(b)), [leads])
 
   // Load contacts once for the picker.
   useEffect(() => { api.getContacts({}).then(setContacts).catch(() => {}) }, [])
@@ -54,11 +148,20 @@ export default function Leads() {
   }
 
   const openQualify = async (lead) => {
+    const generatedContact = isGeneratedLeadContact(lead.contact)
     setQualifyForm({
       ...emptyQualifyForm,
-      contactEmail: lead.contact?.email || '',
-      contactFirstName: lead.contact?.firstName || '',
-      contactLastName: lead.contact?.lastName || '',
+      company: lead.company || '',
+      companySize: lead.companySize || '',
+      industry: lead.industry || '',
+      website: lead.website || '',
+      expectedValue: lead.expectedValue ?? '',
+      seatsRequired: lead.seatsRequired ?? '',
+      locality: lead.locality || '',
+      duration: lead.duration || '',
+      contactEmail: generatedContact ? '' : lead.contact?.email || '',
+      contactFirstName: generatedContact ? '' : lead.contact?.firstName || '',
+      contactLastName: generatedContact ? '' : lead.contact?.lastName || '',
       contactPhone: lead.contact?.phone || '',
       contactCompany: lead.contact?.company || lead.company || '',
     })
@@ -70,7 +173,16 @@ export default function Leads() {
     e.preventDefault()
     setError('')
     try {
-      await api.qualifyLead(qualifyModal.id, qualifyForm)
+      await api.qualifyLead(qualifyModal.id, {
+        ...qualifyForm,
+        expectedValue: qualifyForm.expectedValue === '' ? null : Number(qualifyForm.expectedValue),
+        seatsRequired: qualifyForm.seatsRequired === '' ? null : Number(qualifyForm.seatsRequired),
+        companySize: qualifyForm.companySize || null,
+        industry: qualifyForm.industry || null,
+        website: qualifyForm.website || null,
+        locality: qualifyForm.locality || null,
+        duration: qualifyForm.duration || null,
+      })
       setQualifyModal(null); loadLeads()
     } catch (err) { setError(err.message) }
   }
@@ -80,11 +192,41 @@ export default function Leads() {
     try { await api.deleteLead(id); loadLeads() } catch (err) { alert(err.message) }
   }
 
+  const saveInlineField = async (lead, field, rawValue) => {
+    const numericValue = Number(rawValue)
+    if (field === 'seatsRequired' && rawValue !== '' && (!Number.isInteger(numericValue) || numericValue < 1)) {
+      toast.error('Seats must be a whole number of at least 1')
+      return false
+    }
+    if (field === 'expectedValue' && rawValue !== '' && (!Number.isFinite(numericValue) || numericValue < 0)) {
+      toast.error('Budget must be zero or more')
+      return false
+    }
+    const value = ['expectedValue', 'seatsRequired'].includes(field)
+      ? (rawValue === '' ? null : numericValue)
+      : (rawValue.trim() || null)
+    try {
+      await api.updateLead(lead.id, { [field]: value })
+      if (detailLead?.id === lead.id) setDetailLead({ ...detailLead, [field]: value })
+      loadLeads()
+      toast.success('Lead updated')
+      return true
+    } catch (err) {
+      toast.error(err.message || 'Could not update this lead')
+      return false
+    }
+  }
+
   // The Qualify button only renders when the lead is not yet converted/disqualified.
   // The readiness gate (spec §5): already-qualified leads show no Qualify button;
   // incomplete leads show "Qualify (N fields missing)" instead of a blind button.
   const showQualifyFor = (lead) =>
     lead.status !== 'converted' && lead.status !== 'disqualified' && lead.status !== 'qualified'
+
+  const toggleSort = column => {
+    if (sortBy === column) setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    else { setSortBy(column); setSortDirection('asc') }
+  }
 
   return (
     <div className="space-y-4">
@@ -97,6 +239,7 @@ export default function Leads() {
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="px-3 py-2 bg-white dark:bg-surface-800 dark:text-surface-100 border border-surface-300 dark:border-surface-700 rounded-lg text-sm"><option value="">All Statuses</option>{Object.entries(LEAD_STATUSES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select>
           <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value)} className="px-3 py-2 bg-white dark:bg-surface-800 dark:text-surface-100 border border-surface-300 dark:border-surface-700 rounded-lg text-sm"><option value="">All Sources</option>{Object.entries(LEAD_SOURCES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select>
           <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="px-3 py-2 bg-white dark:bg-surface-800 dark:text-surface-100 border border-surface-300 dark:border-surface-700 rounded-lg text-sm"><option value="">All Types</option>{Object.entries(LEAD_TYPES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select>
+          <select value={localityFilter} onChange={e => setLocalityFilter(e.target.value)} className="px-3 py-2 bg-white dark:bg-surface-800 dark:text-surface-100 border border-surface-300 dark:border-surface-700 rounded-lg text-sm"><option value="">All Locations</option>{localityOptions.map(locality => <option key={locality} value={locality}>{locality}</option>)}</select>
         </div>
         <Button onClick={openCreate}><Plus className="w-4 h-4" />New Lead</Button>
       </div>
@@ -104,54 +247,57 @@ export default function Leads() {
       <div className="flex gap-4 text-xs">
         <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-purple-400" /> MQL — Marketing Qualified</div>
         <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-indigo-500" /> SQL — Sales Qualified</div>
-        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Deal — Sales Opportunity</div>
       </div>
 
       <div className="bg-white dark:bg-surface-900 rounded-xl border border-surface-200 dark:border-surface-700 overflow-hidden">
+        <datalist id="lead-locality-options">{localityOptions.map(locality => <option key={locality} value={locality} />)}</datalist>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead><tr className="border-b border-surface-200 dark:border-surface-700 bg-surface-50/50 dark:bg-surface-900/50">
-              <th className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Lead</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Company</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider"><SortHeader label="Lead / Company" column="company" active={sortBy === 'company'} direction={sortDirection} onSort={toggleSort} /></th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider"><SortHeader label="Location" column="locality" active={sortBy === 'locality'} direction={sortDirection} onSort={toggleSort} /></th>
+              <th className="text-right px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider"><SortHeader label="Seats" column="seatsRequired" active={sortBy === 'seatsRequired'} direction={sortDirection} onSort={toggleSort} /></th>
+              <th className="text-right px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider"><SortHeader label="Budget" column="expectedValue" active={sortBy === 'expectedValue'} direction={sortDirection} onSort={toggleSort} /></th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider"><SortHeader label="Duration" column="duration" active={sortBy === 'duration'} direction={sortDirection} onSort={toggleSort} /></th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Type</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Status</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Contact</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Created</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider"><SortHeader label="Created" column="createdAt" active={sortBy === 'createdAt'} direction={sortDirection} onSort={toggleSort} /></th>
               <th className="text-right px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Actions</th>
             </tr></thead>
             <tbody className="divide-y divide-surface-100 dark:divide-surface-700">
-              {loading ? Array(4).fill(0).map((_, i) => <tr key={i}><td colSpan={7} className="px-4 py-4"><div className="animate-pulse h-4 bg-surface-100 rounded w-full" /></td></tr>) :
-                (!leads || leads.length === 0) ? <tr><td colSpan={7} className="px-4 py-12 text-center text-surface-400">No leads found. Create one to get started.</td></tr> :
-                leads.map(lead => (
+              {loading ? Array(4).fill(0).map((_, i) => <tr key={i}><td colSpan={9} className="px-4 py-4"><div className="animate-pulse h-4 bg-surface-100 rounded w-full" /></td></tr>) :
+                visibleLeads.length === 0 ? <tr><td colSpan={9} className="px-4 py-12 text-center text-surface-400">No leads match these filters.</td></tr> :
+                visibleLeads.map((lead, index) => {
+                  const hasRealContact = lead.contact && !isGeneratedLeadContact(lead.contact)
+                  const displayName = hasRealContact ? `${lead.contact.firstName} ${lead.contact.lastName}` : lead.company || `Lead ${lead.leadNumber}`
+                  const avatarColors = ['bg-[#eeecff] text-[#5849ae]', 'bg-[#fff0eb] text-[#a45142]', 'bg-[#eaf1ff] text-[#4567ae]', 'bg-[#fff5da] text-[#927024]']
+                  const initials = hasRealContact
+                    ? `${lead.contact.firstName?.[0] || ''}${lead.contact.lastName?.[0] || ''}`
+                    : (lead.company || 'Lead').split(/\s+/).slice(0, 2).map(word => word[0]).join('')
+                  return (
                   <tr key={lead.id} className="hover:bg-surface-50/50 dark:hover:bg-surface-800/50 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${lead.type === 'mql' ? 'bg-purple-100' : lead.type === 'sql' ? 'bg-indigo-100' : 'bg-emerald-100'}`}>
-                          <span className={`text-xs font-bold ${lead.type === 'mql' ? 'text-purple-700' : lead.type === 'sql' ? 'text-indigo-700' : 'text-emerald-700'}`}>{lead.leadNumber?.slice(-4)}</span>
+                        <div className={`w-9 h-9 rounded-md flex items-center justify-center flex-shrink-0 ${avatarColors[index % avatarColors.length]}`}>
+                          <span className="text-xs font-semibold">{initials.toUpperCase()}</span>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-surface-800 dark:text-surface-100">{lead.leadNumber}</p>
-                          <p className="text-xs text-surface-500">{lead.company || 'No company'}</p>
-                        </div>
+                        <button onClick={() => setDetailLead(lead)} className="text-left min-w-0">
+                          <p className="text-sm font-medium text-surface-800 dark:text-surface-100 truncate">{displayName}</p>
+                          <p className="text-xs text-surface-500 truncate">{hasRealContact ? `${lead.company || 'No company'} · ${lead.leadNumber}` : lead.leadNumber}</p>
+                        </button>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-surface-600 dark:text-surface-300">{lead.company || '—'}</td>
-                    <td className="px-4 py-3"><Badge color={lead.type === 'mql' ? 'purple' : lead.type === 'sql' ? 'indigo' : 'green'} dot>{lead.type.toUpperCase()}</Badge></td>
+                    <td className="px-4 py-3"><InlineLeadField label="location" value={lead.locality} displayValue={lead.locality} onSave={value => saveInlineField(lead, 'locality', value)} /></td>
+                    <td className="px-4 py-3 text-right"><InlineLeadField label="seats" value={lead.seatsRequired} displayValue={lead.seatsRequired ?? ''} type="number" align="right" onSave={value => saveInlineField(lead, 'seatsRequired', value)} /></td>
+                    <td className="px-4 py-3 text-right"><InlineLeadField label="budget" value={lead.expectedValue} displayValue={lead.expectedValue != null ? formatCurrency(lead.expectedValue) : ''} type="number" align="right" onSave={value => saveInlineField(lead, 'expectedValue', value)} /></td>
+                    <td className="px-4 py-3"><InlineLeadField label="duration" value={lead.duration} displayValue={lead.duration} options={DURATIONS} onSave={value => saveInlineField(lead, 'duration', value)} /></td>
+                    <td className="px-4 py-3"><Badge color={lead.type === 'mql' ? 'purple' : lead.type === 'sql' ? 'blue' : 'emerald'} dot>{lead.type.toUpperCase()}</Badge></td>
                     <td className="px-4 py-3"><Badge color={LEAD_STATUSES[lead.status]?.color || 'gray'}>{LEAD_STATUSES[lead.status]?.label || lead.status}</Badge></td>
-                    <td className="px-4 py-3">
-                      {lead.contact ? (
-                        <button onClick={() => setDetailLead(lead)} className="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
-                          {lead.contact.firstName} {lead.contact.lastName}<ChevronRight className="w-3 h-3" />
-                        </button>
-                      ) : (
-                        <button onClick={() => setDetailLead(lead)} className="text-xs text-surface-400 hover:text-primary-600 flex items-center gap-1"><UserPlus className="w-3 h-3" />Add</button>
-                      )}
-                    </td>
                     <td className="px-4 py-3 text-sm text-surface-500">{formatDateTime(lead.createdAt)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
                         {showQualifyFor(lead) && (
-                          <button onClick={() => openQualify(lead)} className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors" title="Qualify this lead">
+                          <button onClick={() => openQualify(lead)} className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary-700 hover:bg-primary-50 rounded-lg transition-colors" title="Qualify this lead">
                             <UserCheck className="w-4 h-4" />Qualify
                           </button>
                         )}
@@ -159,7 +305,8 @@ export default function Leads() {
                       </div>
                     </td>
                   </tr>
-                ))
+                  )
+                })
               }
             </tbody>
           </table>
@@ -202,30 +349,49 @@ export default function Leads() {
       </Modal>
 
       {/* Qualify Modal */}
-      <Modal isOpen={!!qualifyModal} onClose={() => setQualifyModal(null)} title="Qualify Lead">
+      <Modal isOpen={!!qualifyModal} onClose={() => setQualifyModal(null)} title="Qualify Lead" size="xl">
         <form onSubmit={handleQualify} className="space-y-4">
           {error && <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{error}</div>}
           <p className="text-sm text-surface-600 dark:text-surface-300">Qualify <strong>{qualifyModal?.leadNumber}</strong> ({qualifyModal?.company})</p>
 
-          {/* Readiness gate — if the NRG fields are missing, warn before proceeding */}
-          {qualifyModal && (
-            <div className="p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg text-xs text-amber-700 dark:text-amber-300">
-              {!qualifyModal.seatsRequired || !qualifyModal.locality || !qualifyModal.duration
-                ? 'Some coworking requirements are not yet recorded. Qualifying as SQL will create a deal in the pipeline �� fill seats/locality/duration first for a complete handoff.'
-                : 'All coworking requirements are recorded. Ready to qualify.'}
-            </div>
-          )}
-
           <Select label="Type" value={qualifyForm.type} onChange={v => setQualifyForm({ ...qualifyForm, type: v })} options={Object.entries(LEAD_TYPES).map(([k, v]) => ({ value: k, label: `${v.label} — ${v.description}` }))} />
           <Input label="Qualification Notes" value={qualifyForm.qualificationNotes} onChange={e => setQualifyForm({ ...qualifyForm, qualificationNotes: e.target.value })} />
+          <div className="rounded-xl border border-surface-200 bg-surface-50 p-4 space-y-4">
+            <div>
+              <p className="text-sm font-medium text-surface-700">Workspace requirements</p>
+              <p className="text-xs text-surface-500 mt-1">These details are saved with the lead and carried into its deal.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input label="Estimated budget (₹)" type="number" min="0" value={qualifyForm.expectedValue} onChange={e => setQualifyForm({ ...qualifyForm, expectedValue: e.target.value })} />
+              <Input label="Seats required" type="number" min="1" value={qualifyForm.seatsRequired} onChange={e => setQualifyForm({ ...qualifyForm, seatsRequired: e.target.value })} />
+              <Select label="Preferred locality" value={qualifyForm.locality} onChange={v => setQualifyForm({ ...qualifyForm, locality: v })} options={LOCALITIES.map(locality => ({ value: locality, label: locality }))} />
+              <Select label="Booking duration" value={qualifyForm.duration} onChange={v => setQualifyForm({ ...qualifyForm, duration: v })} options={DURATIONS.map(duration => ({ value: duration, label: duration }))} />
+              <Input label="Company" value={qualifyForm.company} onChange={e => setQualifyForm({ ...qualifyForm, company: e.target.value })} />
+              <Input label="Company size" value={qualifyForm.companySize} onChange={e => setQualifyForm({ ...qualifyForm, companySize: e.target.value })} />
+              <Input label="Industry" value={qualifyForm.industry} onChange={e => setQualifyForm({ ...qualifyForm, industry: e.target.value })} />
+              <div className="sm:col-span-2"><Input label="Company website" value={qualifyForm.website} onChange={e => setQualifyForm({ ...qualifyForm, website: e.target.value })} /></div>
+            </div>
+            {qualifyForm.type !== 'mql' && (
+              <p className={`text-xs rounded-lg px-3 py-2 ${qualifyForm.seatsRequired && qualifyForm.locality && qualifyForm.duration ? 'bg-[#e8eee3] text-[#4c694e]' : 'bg-[#f4efdf] text-[#806c41]'}`}>
+                {qualifyForm.seatsRequired && qualifyForm.locality && qualifyForm.duration
+                  ? 'Workspace details are ready for the sales handoff.'
+                  : 'Add seats, locality and duration for a complete deal handoff.'}
+              </p>
+            )}
+          </div>
           {qualifyForm.type !== 'mql' && (
-            <div className="p-3 bg-primary-50 dark:bg-primary-900/30 rounded-lg space-y-3">
-              <p className="text-xs font-medium text-primary-700 dark:text-primary-300">Contact Information (find or create)</p>
-              <Input label="First Name" value={qualifyForm.contactFirstName} onChange={e => setQualifyForm({ ...qualifyForm, contactFirstName: e.target.value })} />
-              <Input label="Last Name" value={qualifyForm.contactLastName} onChange={e => setQualifyForm({ ...qualifyForm, contactLastName: e.target.value })} />
-              <Input label="Email" type="email" value={qualifyForm.contactEmail} onChange={e => setQualifyForm({ ...qualifyForm, contactEmail: e.target.value })} />
-              <Input label="Phone" value={qualifyForm.contactPhone} onChange={e => setQualifyForm({ ...qualifyForm, contactPhone: e.target.value })} />
-              <Input label="Company" value={qualifyForm.contactCompany} onChange={e => setQualifyForm({ ...qualifyForm, contactCompany: e.target.value })} />
+            <div className="p-4 bg-[#f3eee7] rounded-xl space-y-3">
+              <div>
+                <p className="text-sm font-medium text-[#785f4a]">Contact details</p>
+                <p className="text-xs text-surface-500 mt-1">Used for the lead contact and the deal handoff.</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input label="First name" required value={qualifyForm.contactFirstName} onChange={e => setQualifyForm({ ...qualifyForm, contactFirstName: e.target.value })} />
+                <Input label="Last name" required value={qualifyForm.contactLastName} onChange={e => setQualifyForm({ ...qualifyForm, contactLastName: e.target.value })} />
+                <Input label="Email" type="email" value={qualifyForm.contactEmail} onChange={e => setQualifyForm({ ...qualifyForm, contactEmail: e.target.value })} />
+                <Input label="Phone" value={qualifyForm.contactPhone} onChange={e => setQualifyForm({ ...qualifyForm, contactPhone: e.target.value })} />
+                <div className="sm:col-span-2"><Input label="Contact company" value={qualifyForm.contactCompany} onChange={e => setQualifyForm({ ...qualifyForm, contactCompany: e.target.value })} /></div>
+              </div>
             </div>
           )}
           <div className="flex justify-end gap-3 pt-2">
@@ -252,11 +418,19 @@ export default function Leads() {
               </div>
               <div className="p-3 bg-surface-50 dark:bg-surface-800 rounded-lg">
                 <p className="text-xs text-surface-500">Expected Value</p>
-                <p className="text-sm font-semibold text-surface-800 dark:text-surface-100 mt-0.5">{detailLead.expectedValue ? formatCurrency(detailLead.expectedValue) : '—'}</p>
+                <p className="text-sm font-semibold text-surface-800 dark:text-surface-100 mt-0.5">{detailLead.expectedValue != null ? formatCurrency(detailLead.expectedValue) : '—'}</p>
               </div>
               <div className="p-3 bg-surface-50 dark:bg-surface-800 rounded-lg">
                 <p className="text-xs text-surface-500">Seats Required</p>
                 <p className="text-sm font-semibold text-surface-800 dark:text-surface-100 mt-0.5">{detailLead.seatsRequired ?? '—'}</p>
+              </div>
+              <div className="p-3 bg-surface-50 dark:bg-surface-800 rounded-lg">
+                <p className="text-xs text-surface-500">Company Size</p>
+                <p className="text-sm font-semibold text-surface-800 dark:text-surface-100 mt-0.5">{detailLead.companySize || '—'}</p>
+              </div>
+              <div className="p-3 bg-surface-50 dark:bg-surface-800 rounded-lg">
+                <p className="text-xs text-surface-500">Industry</p>
+                <p className="text-sm font-semibold text-surface-800 dark:text-surface-100 mt-0.5">{detailLead.industry || '—'}</p>
               </div>
               <div className="p-3 bg-surface-50 dark:bg-surface-800 rounded-lg">
                 <p className="text-xs text-surface-500">Preferred Locality</p>

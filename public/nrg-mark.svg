@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-labelledby="title">
+  <title id="title">NRG Co-working mark</title>
+  <rect width="48" height="48" rx="12" fill="#f3efe5"/>
+  <path d="M9.5 38V20a14.5 14.5 0 0 1 29 0v18" fill="none" stroke="#624cc8" stroke-linecap="round" stroke-width="2.8"/>
+  <path d="M15 35V14l18 21V14" fill="none" stroke="#243440" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.6"/>
+  <circle cx="37" cy="37" r="2.3" fill="#bf704c"/>
+</svg>
